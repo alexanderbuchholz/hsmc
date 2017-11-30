@@ -1,1 +1,5 @@
+# gitignore file
+
 *.p
+*.png
+*.pyc
