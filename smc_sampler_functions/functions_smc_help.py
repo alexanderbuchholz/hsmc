@@ -120,7 +120,8 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
     epsilon_flat = epsilon.flatten()
 
     # choose based on sampling
-    weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
+    weights_esjd = np.exp(weighted_squarejumpdist_flat)/np.exp(weighted_squarejumpdist_flat).sum()
+    #weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
     res = np.random.choice(range(weights_esjd.shape[0]), size=N_particles, p=weights_esjd)
     L_next = L_steps_flat[res]
     #L_next = np.int(np.ceil(L_next.mean()))
@@ -158,23 +159,26 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     function that does the quantile regression 
     for getting epsilon max
     """
-    try:
+    target = abs(np.log(proposalkerneldict['target_probability']))
     # case of mala and rw
-        if len(perfkerneldict['energy'].shape)==1:
-            energy = perfkerneldict['energy']
-            energy_quant_reg = energy
-        # case of hmc
-        else: 
-            energy = perfkerneldict['energy'][:,1:]-perfkerneldict['energy'][:,:1]
-            energy_quant_reg = energy[:,-1]
+    if len(perfkerneldict['energy'].shape)==1:
+        energy = perfkerneldict['energy']
+        energy_quant_reg = energy
+    # case of hmc
+    else: 
+        energy = perfkerneldict['energy'][:,1:]-perfkerneldict['energy'][:,:1]
+        energy_quant_reg = energy[:,-1]
 
-        epsilon = perfkerneldict['epsilon'].flatten()
-        if np.isnan(energy_quant_reg).any():
-            selector = energy_quant_reg[np.isnan(energy_quant_reg)]
-            energy_quant_reg = energy_quant_reg[~selector]
-            epsilon = epsilon[~selector]
-            print('discard nan in energy')
-        
+    epsilon = perfkerneldict['epsilon'].flatten()
+    if np.isnan(energy_quant_reg).any():
+        selector = energy_quant_reg[np.isnan(energy_quant_reg)]
+        energy_quant_reg = energy_quant_reg[~selector]
+        epsilon = epsilon[~selector]
+        print('discard nan in energy')
+    
+    max_selector = abs(energy_quant_reg)<abs(np.log(proposalkerneldict['target_probability']))
+    epsilon_max_simple = max(epsilon[max_selector])
+    try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
 
@@ -182,12 +186,17 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
             res_median = quant_reg.fit()
             res_lower = quant_reg.fit(0.25)
             #res_upper = quant_reg.fit(0.75)
+            epsilon_max_quant = (target/res_lower.params)**0.5
+            epsilon_next = (target/res_median.params)**0.5
     except:
         import ipdb; ipdb.set_trace()
-    target = abs(np.log(proposalkerneldict['target_probability']))
-    epsilon_next = (target/res_median.params)**0.5
-    epsilon_max = (target/res_lower.params)**0.5
+        
+    
+    
+    #import ipdb; ipdb.set_trace()
+    
     #epsilon_min = (target/res_upper.params)**0.5
+    epsilon_max = max(epsilon_max_quant, epsilon_max_simple)
     if np.isinf(epsilon_next):
         import ipdb; ipdb.set_trace()
 
