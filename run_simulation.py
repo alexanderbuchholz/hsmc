@@ -19,14 +19,15 @@ dim_list = [2, 5, 10, 20, 50, 100, 200, 300]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 10
+    dim = 2
 N_particles = 2**10
 T_time = 50
-move_steps = 10
+move_steps_hmc = 100
+move_steps_rw_mala = 100
 ESStarget = 0.9
-M_num_repetions = 20
+M_num_repetions = 1
 #rs = np.random.seed(1)
-targetmean = np.ones(dim)*4
+targetmean = np.ones(dim)*2
 targetvariance = np.eye(dim)*0.1
 targetvariance_inv = np.linalg.inv(targetvariance)
 l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
@@ -39,7 +40,6 @@ parameters = {'dim' : dim,
               'df' : 5,
               'T_time' : T_time,
               'autotempering' : True,
-              'move_steps': move_steps,
               'ESStarget': ESStarget,
               'adaptive_covariance' : True
              }
@@ -56,8 +56,8 @@ from smc_sampler_functions.target_distributions import targetlogdens_student, ta
 #import ipdb; ipdb.set_trace()
 #particles_test = np.random.randn(N_particles, dim)
 priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens}
-#targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
-targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
+#targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
 
 temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
 
@@ -73,7 +73,8 @@ maladict = {'proposalkernel_tune': proposalmala,
                       'epsilon' : 1.,
                       'epsilon_max' : 1.,
                       'tune_kernel': True,
-                      'sample_eps_L' : True
+                      'sample_eps_L' : True,
+                      'move_steps': move_steps_rw_mala
                       }
 rwdict = {'proposalkernel_tune': proposalrw,
                       'proposalkernel_sample': proposalrw,
@@ -83,7 +84,8 @@ rwdict = {'proposalkernel_tune': proposalrw,
                       'epsilon' : 1.,
                       'epsilon_max' : 1.,
                       'tune_kernel': True,
-                      'sample_eps_L' : True
+                      'sample_eps_L' : True,
+                      'move_steps': move_steps_rw_mala
                       }
 
 hmcdict1 = {'proposalkernel_tune': proposalhmc,
@@ -92,12 +94,13 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
                       'L_steps' : 50,
-                      'epsilon' : 1.,
-                      'epsilon_max' : 1.,
+                      'epsilon' : .5,
+                      'epsilon_max' : .5,
                       'accept_reject' : True,
                       'tune_kernel': True,
                       'sample_eps_L' : True,
-                      'parallelize' : False
+                      'parallelize' : False,
+                      'move_steps': move_steps_hmc
                       }
 
 hmcdict2 = {'proposalkernel_tune': proposalhmc,
@@ -106,12 +109,13 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
                       'L_steps' : 50,
-                      'epsilon' : 1.,
-                      'epsilon_max' : 1.,
+                      'epsilon' : .5,
+                      'epsilon_max' : .5,
                       'accept_reject' : True,
                       'tune_kernel': True,
                       'sample_eps_L' : True,
-                      'parallelize' : False
+                      'parallelize' : False,
+                      'move_steps': move_steps_hmc
                       }
 
 
@@ -138,7 +142,6 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
 #yappi.get_func_stats().print_all()
 
 
-import ipdb; ipdb.set_trace()
 if __name__ == '__main__':
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     samplers_list_dict = [hmcdict1, hmcdict2, maladict, rwdict]
@@ -147,3 +150,4 @@ if __name__ == '__main__':
     from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
     plot_repeated_simulations(res_repeated_sampling)
     plot_results_single_simulation(res_first_iteration)
+    import ipdb; ipdb.set_trace()
