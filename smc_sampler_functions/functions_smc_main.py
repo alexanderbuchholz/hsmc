@@ -32,7 +32,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
     
     proposalkernel_tune = proposalkerneldict_temp['proposalkernel_tune']
     proposalkernel_sample = proposalkerneldict_temp['proposalkernel_sample']
-    move_steps = parameters['move_steps']
+    move_steps = proposalkerneldict['move_steps']
     assert callable(proposalkernel_tune)
     assert callable(proposalkernel_sample)
     assert isinstance(proposalkerneldict_temp, dict)
