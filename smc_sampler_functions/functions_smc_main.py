@@ -170,6 +170,7 @@ def repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetion
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
     if save_res:
         now = datetime.datetime.now().isoformat()
+        root_folder = os.getcwd()
         os.mkdir('results_simulation_%s'%(now))
         os.chdir('results_simulation_%s'%(now))
     # run the samplers
@@ -189,6 +190,8 @@ def repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetion
     all_dict = {'parameters': parameters, 'norm_const' : norm_constant_list, 'mean_array' : mean_array, 'var_array' :  var_array, 'names_samplers' : names_samplers}
     if save_res:
         pickle.dump(all_dict, open('%sall_dict_sampler_dim_%s.p' %(save_name, parameters['dim']), 'wb'))
+    os.chdir(root_folder)
+    #root_folder = os.getcwd()
     return(all_dict, res_first_iteration)
 
 

@@ -10,7 +10,6 @@ from scipy.stats import norm
 from scipy.special import gamma
 import sys
 sys.path.append("../help/")
-sys.path.append("/home/alex/Dropbox/smc_hmc/python_smchmc/help")
 
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
