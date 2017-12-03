@@ -1,3 +1,4 @@
+# simulations server
 # Notebook for smc sampler 
 from __future__ import print_function
 from __future__ import division
@@ -14,22 +15,22 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [2, 5, 10, 20, 50, 100, 200, 300]
+dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 30
+    dim = 2
 N_particles = 2**10
 T_time = 1000
-move_steps_hmc = 1
-move_steps_rw_mala = 10
-ESStarget = 0.99
-M_num_repetions = 1
+move_steps_hmc = 10
+move_steps_rw_mala = 50
+ESStarget = 0.95
+M_num_repetions = 100
 epsilon = .1
 epsilon_hmc = .1
-verbose = True
+verbose = False
 #rs = np.random.seed(1)
-targetmean = np.ones(dim)*2
+targetmean = np.ones(dim)*8.
 targetvariance = np.eye(dim)*0.1
 targetvariance_inv = np.linalg.inv(targetvariance)
 l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
@@ -49,31 +50,13 @@ parameters = {'dim' : dim,
 
 
 # define the target distributions
-#from smc_sampler_functions.cython.cython_target_distributions import priorlogdens, priorgradlogdens
 from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens
-from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
-from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
-from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
-parameters_logistic = f_dict_logistic_regression(dim)
-#import ipdb; ipdb.set_trace()
-parameters.update(parameters_logistic)
-#parameters['dim'] = parameters_logistic['X_all'].shape[1]
-#from smc_sampler_functions.target_distributions import targetlogdens_student as targetlogdens_student_py
-#from smc_sampler_functions.target_distributions import targetgradlogdens_student as targetgradlogdens_student_py
-
-#import ipdb; ipdb.set_trace()
-#particles_test = np.random.randn(N_particles, dim)
 priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens}
-#targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
-targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
-#targetdistribution = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
-
-temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
 
 # prepare the kernels and specify parameters
 from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
 from smc_sampler_functions.functions_smc_main import smc_sampler
-from smc_sampler_functions.standard_mh_sampler import parallel_mh_sampler
+
 
 maladict = {'proposalkernel_tune': proposalmala,
                       'proposalkernel_sample': proposalmala,
@@ -136,55 +119,27 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
 
 
 
-#print temperatures
-#import yappi
-#yappi.start()
-# sample and compare the results
-#res_dict_hmc = smc_sampler(temperedist,  parameters, hmcdict2)
-#res_dict_mala = smc_sampler(temperedist,  parameters, maladict)
-#res_dict_rw = smc_sampler(temperedist,  parameters, rwdict)
-#yappi.get_func_stats().print_all()
-
-#from functions_smc_plotting import plot_results_single_simulation
-#plot_results_single_simulation([res_dict_hmc, res_dict_mala, res_dict_rw])
-#import yappi
-#yappi.start()
-# sample and compare the results
-#res_dict_hmc = smc_sampler(temperedist,  parameters, hmcdict1)
-#yappi.get_func_stats().print_all()
-
-#yappi.start()
-#res_dict_hmc = smc_sampler(temperedist,  parameters, hmcdict2)
-#yappi.get_func_stats().print_all()
-
-
 if __name__ == '__main__':
-    if False:
-        mh_sampler = parallel_mh_sampler(temperedist, parameters, hmcdict2)
-        #import ipdb; ipdb.set_trace()
-        parameters['N_particles'] = 2**10
-        res_dict_hmc = smc_sampler(temperedist,  parameters, hmcdict1)
-        res_dict_rw = smc_sampler(temperedist,  parameters, rwdict)
-        res_dict_mala = smc_sampler(temperedist,  parameters, maladict)
-        
-        from matplotlib import pyplot as plt
-        plt.plot(mh_sampler['particles'][0,1,:]); plt.show()
-        plt.plot(mh_sampler['particles'][0,1,:].cumsum()/np.arange(1, T_time+1)); plt.show()
-        # mean
-        print(mh_sampler['particles'][0,0,int(T_time/2):].mean())
-        # acceptance rate
-        print(np.mean(np.diff(mh_sampler['particles'][0,1,int(T_time/2):], 1) > 0))
-        plt.hist(mh_sampler['particles'][0,1,int(T_time/2):]); plt.show()
-
-        import ipdb; ipdb.set_trace()
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
-    #samplers_list_dict = [rwdict, hmcdict2, maladict, rwdict]
-    samplers_list_dict = [hmcdict2, rwdict, maladict]
-    #samplers_list_dict = [hmcdict1, hmcdict2]
-    res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = targetdistribution['target_name'])
-    from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
-    plot_repeated_simulations(res_repeated_sampling)
-    plot_results_single_simulation(res_first_iteration)
-    import ipdb; ipdb.set_trace()
+    samplers_list_dict = [hmcdict2, hmcdict1, rwdict, maladict]
+
+    from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
+    from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
+    from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
+    parameters_logistic = f_dict_logistic_regression(dim)
+    parameters.update(parameters_logistic)
+
+    priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens}
+    targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
+    targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+    targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
+
+    target_dist_list = [targetdistribution1, targetdistribution2, targetdistribution3]
+    for target_dist in target_dist_list: 
+        temperedist = sequence_distributions(parameters, priordistribution, target_dist)
+        res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
+        #from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
+        #plot_repeated_simulations(res_repeated_sampling)
+        #plot_results_single_simulation(res_first_iteration)
 

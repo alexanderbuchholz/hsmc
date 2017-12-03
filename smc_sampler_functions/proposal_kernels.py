@@ -14,6 +14,7 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
     assert isinstance(parametersmcmc, dict)
     assert temperature <= 1.
     assert temperature >= 0.
+    N_particles, dim = particles.shape
     covariance_matrix = parametersmcmc['covariance_matrix']
     #import ipdb; ipdb.set_trace()
     l_matrix = np.linalg.cholesky(covariance_matrix)
@@ -25,6 +26,9 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
         epsilon = parametersmcmc['epsilon_sampled']
     else:
         epsilon = parametersmcmc['epsilon']
+    if epsilon.shape[0] == 1:
+        epsilon = np.ones((N_particles,1))*epsilon
+
 
     noise = np.random.normal(size=size_rw).dot(l_matrix_inv)*epsilon
     #pdb.set_trace()
@@ -52,7 +56,8 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'epsilon':epsilon,
                                 'L':1}
-
+    if parametersmcmc['verbose']:
+        print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accept_reject_selector.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(1)))
     return particles_next, performance_kernel_dict
 
     
@@ -63,6 +68,7 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     assert isinstance(parametersmcmc, dict)
     assert temperature <= 1.
     assert temperature >= 0.
+    N_particles, dim = particles.shape
     
 
     size_drift = particles.shape
@@ -71,6 +77,9 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
         epsilon = parametersmcmc['epsilon_sampled']
     else:
         epsilon = parametersmcmc['epsilon']
+    if epsilon.shape[0] == 1:
+        epsilon = np.ones((N_particles,1))*epsilon
+
     covariance_matrix = parametersmcmc['covariance_matrix']
     l_matrix = np.linalg.cholesky(covariance_matrix)
     l_matrix_inv = np.linalg.inv(l_matrix)
@@ -106,7 +115,8 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
                                 'acceptance_rate':accept_reject_selector.mean(),
                                 'epsilon':epsilon, 
                                 'L':1}
-
+    if parametersmcmc['verbose']:
+        print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accept_reject_selector.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(1)))
     return particles_next, performance_kernel_dict
 
 
@@ -145,6 +155,8 @@ def leapfr_mom_pos(cur_x, cur_p, epsilon, gradf, temperature, inv_mass):
     #TODO add the bounce routine here
     return (new_x, new_p)
     
+
+
 def f_energy_kinetic(momentum, inv_mass):
     momentum = np.atleast_2d(momentum)
     energy_kinetic = 0.5*(momentum.dot(inv_mass)*momentum).sum(axis=1)
@@ -173,11 +185,13 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
     l_matrix_inv = np.linalg.inv(l_matrix)
     N_particles, dim = particles.shape
     L_steps = int(np.mean(parametersmcmc['L_steps']))
-    L_steps_max = np.max(L_steps)
     if 'epsilon_sampled' in parametersmcmc.keys():
         epsilon = parametersmcmc['epsilon_sampled']
     else:
         epsilon = parametersmcmc['epsilon']
+    if epsilon.shape[0] == 1:
+        epsilon = np.ones((N_particles,1))*epsilon
+
     #import ipdb; ipdb.set_trace()
     accept_reject = parametersmcmc['accept_reject']
     #import ipdb; ipdb.set_trace()
@@ -187,12 +201,12 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
     
     # preallocate the arrays
     
-    x = np.zeros((N_particles, dim, L_steps_max+1))
-    energy_kinetic = np.zeros((N_particles, L_steps_max+1))
-    energy_potential = np.zeros((N_particles, L_steps_max+1))
-    marginal_ESJD = np.zeros((N_particles, L_steps_max+1))
-    ESJD = np.zeros((N_particles, L_steps_max+1))
-    p = np.zeros((N_particles, dim, L_steps_max+2)) # velocity
+    x = np.zeros((N_particles, dim, L_steps+1))
+    energy_kinetic = np.zeros((N_particles, L_steps+1))
+    energy_potential = np.zeros((N_particles, L_steps+1))
+    marginal_ESJD = np.zeros((N_particles, L_steps+1))
+    ESJD = np.zeros((N_particles, L_steps+1))
+    p = np.zeros((N_particles, dim, L_steps+2)) # velocity
 
     # start with t = 0
     x[:, :, 0] = particles
@@ -203,11 +217,11 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
     energy_kinetic[:, 0], energy_potential[:, 0] = f_energy(x[:, :, 0], p[:, :, 0], temperedist.logdensity, temperature, covariance_matrix)
 
     # First half-step of leapfrog.
-    #pdb.set_trace()
     p[:, :, 1] = leapfr_mom(x[:, :, 0], p[:, :, 0], epsilon, temperedist.gradlogdensity, temperature=temperature, half=True)
     x[:, :, 1] = leapfr_pos(x[:, :, 0], p[:, :, 1], epsilon, covariance_matrix)
-    #inter_momentum = leapfr_mom(x[:, :, 1], p[:, :, 1], epsilon, gradient_log_density, half=True)
-    #energy_kinetic[:, 1], energy_potential[:, 1] = f_energy(x[:, :, 1], inter_momentum, log_density, covariance_matrix)
+    inter_momentum = leapfr_mom(x[:, :, 1], p[:, :, 1], epsilon, temperedist.gradlogdensity, temperature=temperature, half=True)
+    energy_kinetic[:, 1], energy_potential[:, 1] = f_energy(x[:, :, 1], inter_momentum, temperedist.logdensity, temperature, covariance_matrix)
+
     #import ipdb; ipdb.set_trace()
     for m_leapfrog_step in range(1, L_steps):
         #pdb.set_trace()
@@ -218,6 +232,7 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
         marginal_ESJD[:, m_leapfrog_step] = ((x[:, :, m_leapfrog_step] - x[:, :, 0])*-p[:, :, m_leapfrog_step]).sum(axis=1)
         ESJD[:, m_leapfrog_step] = ((x[:, :, m_leapfrog_step] - x[:, :, 0])*(x[:, :, m_leapfrog_step] - x[:, :, 0])).sum(axis=1)
     #pdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     p[:, :, -1] = leapfr_mom(x[:, :, -1], p[:, :, -2], epsilon, temperedist.gradlogdensity, temperature, half=True)
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     marginal_ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*-p[:, :, -1]).sum(axis=1)
@@ -258,6 +273,9 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
                                 'L':L_steps}
+    #import ipdb; ipdb.set_trace()
+    if parametersmcmc['verbose']:
+        print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
     return particles_next, performance_kernel_dict
 
 
@@ -346,7 +364,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     if isinstance(L_steps, int):
         L_steps = np.ones(N_particles, dtype=int)*L_steps
     #L_steps = np.ones(N_particles, dtype=int)*int(np.mean(L_steps))
-    #import ipdb; ipdb.set_trace()
+    
     L_dict_list = [{'iteration_L': iteration_L, 'L_step': L_step} for iteration_L, L_step in enumerate(L_steps)]
     if parametersmcmc['parallelize'] == 'mutltiprocess': 
         print('run parallelized code')
@@ -390,7 +408,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         #import ipdb; ipdb.set_trace()
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     ESJD[:, -1] = np.linalg.norm(x[:, :, -1] - x[:, :, 0])**2
-
+    
 
     # accept reject routine
     energy_total = energy_kinetic + energy_potential
@@ -427,5 +445,8 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
                                 'L':L_steps}
+    #import ipdb; ipdb.set_trace()
+    if parametersmcmc['verbose']: 
+        print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
     return particles_next, performance_kernel_dict
 

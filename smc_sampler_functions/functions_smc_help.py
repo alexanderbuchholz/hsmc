@@ -51,10 +51,6 @@ class sequence_distributions(object):
         return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles)*(1.-temperature)
 
 
-def fun_sequence_distribution(particles, temperature, dict_dist_params):
-    parameters = dict_dist_params['parameters']
-    parameters, priordistribution, targetdistribution
-
 def logincrementalweights(particles, temperedist, temperature):
     """
     returns the log incremental weights
@@ -107,26 +103,30 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
         squarejumpdist = perfkerneldict['squarejumpdist'][:,1:]
         N_particles, L_total = energy.shape
         energy_quant_reg = energy[:,-1]
+        
 
     epsilon = np.tile(perfkerneldict['epsilon'], (1, L_total))
     L_steps = np.tile(np.arange(1, L_total+1), (N_particles, 1))
 
-    energy_weights = np.clip(np.exp(energy), 0, 1)
+    energy_weights = np.clip(np.exp(energy), 0., 1.)
     # flatten arrays
     squarejumpdist_flat = squarejumpdist.flatten()
     L_steps_flat = L_steps.flatten()
     weights_flat = energy_weights.flatten()
-    weighted_squarejumpdist_flat = squarejumpdist_flat*weights_flat/L_steps_flat
+    weighted_squarejumpdist_flat = squarejumpdist_flat*weights_flat/(L_steps_flat)
     epsilon_flat = epsilon.flatten()
 
     # choose based on sampling
-    weights_esjd = np.exp(weighted_squarejumpdist_flat)/np.exp(weighted_squarejumpdist_flat).sum()
+    weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
+    if np.isnan(weights_esjd).any():
+        import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     #weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
     res = np.random.choice(range(weights_esjd.shape[0]), size=N_particles, p=weights_esjd)
     L_next = L_steps_flat[res]
     #L_next = np.int(np.ceil(L_next.mean()))
     epsilon_next = epsilon_flat[res][:, np.newaxis]
-    
+    #import ipdb; ipdb.set_trace()
     if False: 
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
@@ -145,7 +145,12 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
         #ax.clf()
         #surf.clf()
         #plt.show()
-
+        plt.hist(epsilon_next)
+        plt.savefig('hist_epsilon_temp_%s.png' %(perfkerneldict['temp']))
+        plt.clf()
+        plt.hist(L_next)
+        plt.savefig('hist_L_temp_%s.png' %(perfkerneldict['temp']))
+        plt.clf()
 
     # choose the argmax
     #index_max = np.argmax(weighted_squarejumpdist_flat)
@@ -168,16 +173,20 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     else: 
         energy = perfkerneldict['energy'][:,1:]-perfkerneldict['energy'][:,:1]
         energy_quant_reg = energy[:,-1]
-
     epsilon = perfkerneldict['epsilon'].flatten()
+    #import ipdb; ipdb.set_trace()
     if np.isnan(energy_quant_reg).any():
+        import ipdb; ipdb.set_trace()
         selector = energy_quant_reg[np.isnan(energy_quant_reg)]
         energy_quant_reg = energy_quant_reg[~selector]
         epsilon = epsilon[~selector]
         print('discard nan in energy')
-    
-    max_selector = abs(energy_quant_reg)<abs(np.log(proposalkerneldict['target_probability']))
-    epsilon_max_simple = max(epsilon[max_selector])
+    try:
+        max_selector = abs(energy_quant_reg)<abs(np.log(proposalkerneldict['target_probability']))
+        epsilon_max_simple = max(epsilon[max_selector])
+    except:
+        try: epsilon_max_simple =  max(epsilon[np.argmax(energy_quant_reg)])
+        except: epsilon_max_simple =  max(epsilon)
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
@@ -196,14 +205,14 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     #import ipdb; ipdb.set_trace()
     
     #epsilon_min = (target/res_upper.params)**0.5
-    epsilon_max = max(epsilon_max_quant, epsilon_max_simple)
+    epsilon_max = np.max([epsilon_max_quant, epsilon_max_simple])
     if np.isinf(epsilon_next):
         import ipdb; ipdb.set_trace()
 
     if False:
         #import ipdb; ipdb.set_trace()
         from matplotlib import pyplot as plt
-        plt.scatter(y=np.abs(energy_quant_reg), x = epsilon, color='blue')
+        plt.scatter(y=energy_quant_reg, x = epsilon, color='blue')
         plt.plot(epsilon, res_median.params*(epsilon**2).flatten(), color='red')
         plt.plot(epsilon, res_lower.params*(epsilon**2).flatten(), color='grey')
         #plt.scatter(y=res_lower.params*(epsilon_current**2).flatten(), x = (epsilon_current).flatten(), color='grey')

@@ -71,7 +71,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
         if proposalkerneldict_temp['tune_kernel']:
             print("now tuning")
             # tune the parameters 
-            proposalkerneldict_temp['L_steps'] = 50
+            proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
             proposalkerneldict_temp['epsilon_sampled'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
             particles, perfkerneldict = proposalkernel_tune(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
             perfkerneldict['temp'] = temp_curr
@@ -88,6 +88,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
         for move in range(move_steps):
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
             #import ipdb; ipdb.set_trace()
+            #np.random.shuffle(proposalkerneldict_temp['epsilon'])
+            #np.random.shuffle(proposalkerneldict_temp['L_steps'])
         
 
         # choose weights adaptively
@@ -134,7 +136,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
     # resample and remove in the end
     for move in range(move_steps):
         particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-
+        #np.random.shuffle(proposalkerneldict_temp['epsilon'])
+        #np.random.shuffle(proposalkerneldict_temp['L_steps'])
     #pdb.set_trace()
     particles_resampled, weights_normalized = resample(particles, weights_normalized)
     time_end = time.time()
