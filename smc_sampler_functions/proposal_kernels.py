@@ -327,7 +327,6 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     l_matrix_inv = np.linalg.inv(l_matrix)
     N_particles, dim = particles.shape
     L_steps = parametersmcmc['L_steps']
-    L_steps_max = np.max(L_steps)
     
     if 'epsilon_sampled' in parametersmcmc.keys():
         epsilon = parametersmcmc['epsilon_sampled']
@@ -336,6 +335,8 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     if epsilon.shape[0] == 1:
         epsilon = np.ones((N_particles,1))*epsilon
     #import ipdb; ipdb.set_trace()
+    if parametersmcmc['mean_L']:
+        L_steps = np.ones(N_particles, dtype=int)*int(np.mean(L_steps))
     accept_reject = parametersmcmc['accept_reject']
     #import ipdb; ipdb.set_trace()
     gradient_log_density = partial(temperedist.gradlogdensity, temperature=temperature)

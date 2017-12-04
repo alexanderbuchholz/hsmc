@@ -19,19 +19,20 @@ dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 2
-N_particles = 2**10
+    dim = 30
+N_particles = 2**11
 T_time = 1000
 move_steps_hmc = 10
 move_steps_rw_mala = 50
 ESStarget = 0.95
-M_num_repetions = 100 
+M_num_repetions = 20
 epsilon = .1
 epsilon_hmc = .1
 verbose = False
 #rs = np.random.seed(1)
-targetmean = np.ones(dim)*8.
-targetvariance = np.eye(dim)*0.1
+targetmean = np.ones(dim)*2.
+#targetvariance = np.eye(dim)*0.1
+targetvariance = (0.1*(np.diag(np.arange(dim))/float(dim) +0.7*np.ones((dim, dim))))
 targetvariance_inv = np.linalg.inv(targetvariance)
 l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
 parameters = {'dim' : dim, 
@@ -98,11 +99,12 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
-                      'move_steps': move_steps_hmc
+                      'move_steps': move_steps_hmc, 
+                      'mean_L' : False
                       }
 
 hmcdict2 = {'proposalkernel_tune': proposalhmc,
-                      'proposalkernel_sample': proposalhmc,
+                      'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC',
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
@@ -114,7 +116,8 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
-                      'move_steps': move_steps_hmc
+                      'move_steps': move_steps_hmc,
+                      'mean_L' : True
                       }
 
 
@@ -135,11 +138,13 @@ if __name__ == '__main__':
     targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
     targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
 
-    target_dist_list = [targetdistribution1, targetdistribution2, targetdistribution3]
+    target_dist_list = [targetdistribution2]
+    #target_dist_list = [targetdistribution2, targetdistribution3]
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
         res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
-        #from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
-        #plot_repeated_simulations(res_repeated_sampling)
-        #plot_results_single_simulation(res_first_iteration)
+        from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
+        plot_repeated_simulations(res_repeated_sampling)
+        plot_results_single_simulation(res_first_iteration)
+
 
