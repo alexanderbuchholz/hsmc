@@ -115,9 +115,13 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
     weights_flat = energy_weights.flatten()
     weighted_squarejumpdist_flat = squarejumpdist_flat*weights_flat/(L_steps_flat)
     epsilon_flat = epsilon.flatten()
-
+    
+    # filter out the terms that degenerated
+    if np.isnan(weighted_squarejumpdist_flat).any():
+        nan_selector = np.isnan(weighted_squarejumpdist_flat)
+        weighted_squarejumpdist_flat[nan_selector] = 0
     # choose based on sampling
-    weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
+    weights_esjd = weighted_squarejumpdist_flat/np.nansum(weighted_squarejumpdist_flat)
     if np.isnan(weights_esjd).any():
         import ipdb; ipdb.set_trace()
     #import ipdb; ipdb.set_trace()
@@ -176,8 +180,8 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     epsilon = perfkerneldict['epsilon'].flatten()
     #import ipdb; ipdb.set_trace()
     if np.isnan(energy_quant_reg).any():
-        import ipdb; ipdb.set_trace()
-        selector = energy_quant_reg[np.isnan(energy_quant_reg)]
+        #import ipdb; ipdb.set_trace()
+        selector = np.isnan(energy_quant_reg)
         energy_quant_reg = energy_quant_reg[~selector]
         epsilon = epsilon[~selector]
         print('discard nan in energy')

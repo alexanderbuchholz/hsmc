@@ -48,8 +48,26 @@ def targetgradlogdens_normal(particles, parameters):
     parameters dict 'targetmean' 'targetvariance'
     """
     meaned_particles = particles - parameters['targetmean']
-    l_inv_cov = parameters['l_targetvariance_inv']
-    return -meaned_particles.dot(l_inv_cov.transpose())
+    inv_cov = parameters['targetvariance_inv']
+    return -meaned_particles.dot(inv_cov)
+
+
+def targetlogdens_ring(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    parameters dict 'targetmean' 'targetvariance'
+    multivariate normal
+    """
+    return -0.5*(np.linalg.norm(particles, axis=1)**2 - 4)**2
+
+def targetgradlogdens_ring(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    parameters dict 'targetmean' 'targetvariance'
+    """
+    return -(np.linalg.norm(particles, axis=1)**2 - 4)[:,np.newaxis]*particles
+
+
 
 
 def targetlogdens_student(particles, parameters):
