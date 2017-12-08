@@ -28,6 +28,7 @@ class sequence_distributions(object):
         self.targetlogdens = targetdistribution['logdensity']
         self.priorgradlogdens = priordistribution['gradlogdensity']
         self.targetgradlogdens = targetdistribution['gradlogdensity']
+        self.target_name = targetdistribution['target_name']
         
         assert callable(self.priorlogdens)
         assert callable(self.priorsampler)

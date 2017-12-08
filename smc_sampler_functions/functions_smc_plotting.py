@@ -71,8 +71,8 @@ def plot_results_single_simulation(results_list):
         temp = np.array(results_sampler['temp_list'])
         plt.plot(temp, ESJD, label=results_sampler['proposal_kernel']['proposalname'])
     plt.legend()
-
-    plt.savefig('diagnosis_single_simulation.png')
+    #import ipdb; ipdb.set_trace()
+    plt.savefig('diagnosis_single_simulation_dim_%s_model_%s.png'%(results_list[0]['particles_resampled'].shape[1], results_list[0]['target_name']))
     
     plt.show()
     plt.clf()
@@ -99,8 +99,8 @@ def plot_repeated_simulations(results_dict):
     plt.subplot(223)
     plt.boxplot(var_array.transpose(), labels=names_samplers)
     plt.title('var first component')
-
-    plt.savefig('repeated_simulation.png')
+    import ipdb; ipdb.set_trace()
+    plt.savefig('repeated_simulation_%s_dim_%s.png' %(results_dict['target_name'], results_dict['parameters']['dim']))
     plt.show()
     plt.clf()
 

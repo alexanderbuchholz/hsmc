@@ -16,7 +16,7 @@ import datetime
 import os
 
 
-def smc_sampler(temperedist, parameters, proposalkerneldict):
+def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     """
     implements the smc sampler
     """
@@ -55,7 +55,6 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
     temp_curr = 0.
     temp_next = 0.
     counter_while = 0
-
     print('Now runing smc sampler with %s kernel' %proposalkerneldict_temp['proposalname'])
     time_start = time.time()
     while temp_curr <= 1.:
@@ -69,7 +68,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
         
         #import ipdb; ipdb.set_trace()
         if proposalkerneldict_temp['tune_kernel']:
-            print("now tuning")
+            if verbose: 
+                print("now tuning")
             # tune the parameters 
             proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
             proposalkerneldict_temp['epsilon_sampled'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
@@ -82,8 +82,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
             proposalkerneldict_temp['epsilon_max'] = results_tuning['epsilon_max']
             proposalkerneldict_temp['L_steps'] = results_tuning['L_next']
             #import ipdb; ipdb.set_trace()
-
-        print("now sampling")
+        if verbose: 
+            print("now sampling")
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
         for move in range(move_steps):
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
@@ -158,13 +158,14 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
         'parameters' : parameters,
         'proposal_kernel': proposalkerneldict_temp,
         'run_time' : run_time,
-        'perf_list' : perf_list
+        'perf_list' : perf_list,
+        'target_name' : temperedist.target_name
         }
     #import ipdb; ipdb.set_trace()
     return res_dict
 
 
-def repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=50, save_res=True, save_name=''):
+def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_name=''):
     # function that repeats the sampling
     len_list = len(samplers_list_dict)
     norm_constant_list = np.zeros((len_list, M_num_repetions))
@@ -190,9 +191,16 @@ def repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetion
             var_array[k, m_repetition] = res_dict['var_list'][-1][0,0]
             if save_res:
                 pickle.dump(res_dict, open('%ssampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
-    all_dict = {'parameters': parameters, 'norm_const' : norm_constant_list, 'mean_array' : mean_array, 'var_array' :  var_array, 'names_samplers' : names_samplers}
+    all_dict = {'parameters': parameters, 
+                'norm_const' : norm_constant_list, 
+                'mean_array' : mean_array, 
+                'var_array' :  var_array, 
+                'names_samplers' : names_samplers,
+                'M_num_repetions' : M_num_repetions,
+                'target_name' : temperedist.target_name
+                }
     if save_res:
-        pickle.dump(all_dict, open('%sall_dict_sampler_dim_%s.p' %(save_name, parameters['dim']), 'wb'))
+        pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
     os.chdir(root_folder)
     #root_folder = os.getcwd()
     return(all_dict, res_first_iteration)
