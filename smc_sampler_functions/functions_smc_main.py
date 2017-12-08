@@ -165,13 +165,17 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     return res_dict
 
 
-def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_name=''):
+def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_res_intermediate=False, save_name=''):
     # function that repeats the sampling
     len_list = len(samplers_list_dict)
+    dim = parameters['dim']
+    N_particles = parameters['N_particles']
     norm_constant_list = np.zeros((len_list, M_num_repetions))
     mean_array = np.zeros((len_list, M_num_repetions))
     var_array = np.zeros((len_list, M_num_repetions))
+    particles_array = np.zeros((N_particles, dim, len_list, M_num_repetions))
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
+    runtime_list = np.zeros((len_list, M_num_repetions))
     root_folder = os.getcwd()
     if save_res:
         now = datetime.datetime.now().isoformat()
@@ -189,7 +193,9 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             norm_constant_list[k, m_repetition] = np.sum(res_dict['Z_list'])
             mean_array[k, m_repetition] = res_dict['mean_list'][-1][0]
             var_array[k, m_repetition] = res_dict['var_list'][-1][0,0]
-            if save_res:
+            runtime_list[k, m_repetition] = res_dict['run_time']
+            particles_array[:,:,k, m_repetition] = res_dict['particles_resampled']
+            if save_res_intermediate:
                 pickle.dump(res_dict, open('%ssampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
     all_dict = {'parameters': parameters, 
                 'norm_const' : norm_constant_list, 
@@ -197,7 +203,9 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
                 'var_array' :  var_array, 
                 'names_samplers' : names_samplers,
                 'M_num_repetions' : M_num_repetions,
-                'target_name' : temperedist.target_name
+                'target_name' : temperedist.target_name, 
+                'particles_array' : particles_array, 
+                'runtime_list' : runtime_list
                 }
     if save_res:
         pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
@@ -210,3 +218,4 @@ if __name__ == '__main__':
     print(resampling.multinomial_resample([0.5, 0.5]))
     now = datetime.datetime.now().isoformat()
     os.mkdir('results_simulation_%s'%(now))
+
