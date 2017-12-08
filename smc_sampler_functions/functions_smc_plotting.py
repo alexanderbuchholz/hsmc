@@ -29,7 +29,8 @@ def plot_results_single_simulation(results_list):
     plt.subplot(333)
     for results_sampler in results_list:
         plt.scatter(results_sampler['particles_resampled'][:,0], results_sampler['particles_resampled'][:,1], label=results_sampler['proposal_kernel']['proposalname'], alpha=0.2)
-    plt.scatter(results_sampler['parameters']['targetmean'][0], results_sampler['parameters']['targetmean'][1], color="r")
+    try: plt.scatter(results_sampler['parameters']['targetmean'][0], results_sampler['parameters']['targetmean'][1], color="r")
+    except: pass
     plt.title("particles")
     plt.legend()
 

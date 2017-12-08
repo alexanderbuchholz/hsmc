@@ -24,14 +24,17 @@ class sequence_distributions(object):
         """
         self.parameters = parameters
         self.priorlogdens = priordistribution['logdensity']
+        self.priorsampler = priordistribution['priorsampler']
         self.targetlogdens = targetdistribution['logdensity']
         self.priorgradlogdens = priordistribution['gradlogdensity']
         self.targetgradlogdens = targetdistribution['gradlogdensity']
         
         assert callable(self.priorlogdens)
+        assert callable(self.priorsampler)
         assert callable(self.targetlogdens)
         assert callable(self.priorgradlogdens)
         assert callable(self.targetgradlogdens)
+
         
     def logdensity(self, particles, temperature):
         """
@@ -40,7 +43,7 @@ class sequence_distributions(object):
         assert temperature<=1.
         assert temperature>=0.
         #import ipdb; ipdb.set_trace()
-        return (self.targetlogdens(particles, self.parameters)*temperature)+self.priorlogdens(particles)*(1.-temperature)
+        return (self.targetlogdens(particles, self.parameters)*temperature)+self.priorlogdens(particles, self.parameters)*(1.-temperature)
     
     def gradlogdensity(self, particles, temperature):
         """
@@ -48,7 +51,7 @@ class sequence_distributions(object):
         """
         assert temperature<=1.
         assert temperature>=0.
-        return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles)*(1.-temperature)
+        return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles, self.parameters)*(1.-temperature)
 
 
 def logincrementalweights(particles, temperedist, temperature):

@@ -45,7 +45,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
 
     
     # intialize sampler
-    particles = np.random.normal(size=(N_particles, dim))
+    particles = temperedist.priorsampler(parameters)
     weights_normalized = np.ones(N_particles)/N_particles
     #Z_hat = 0.#np.log((2*np.pi)**(dim/2.))
     #Z_list.append(Z_hat)
@@ -112,8 +112,11 @@ def smc_sampler(temperedist, parameters, proposalkerneldict):
         
         # reweight
         weights = reweight(particles, temperedist, [temp_curr, temp_next], weights_normalized)
-        Z_hat = np.log(np.exp(weights).sum())
-        weights_normalized = np.exp(weights)/np.exp(weights).sum()
+        #if np.isinf(np.exp(weights)).any():
+        #    import ipdb; ipdb.set_trace()
+        max_weights = np.max(weights)
+        Z_hat = max_weights+np.log(np.exp(weights-max_weights).sum())
+        weights_normalized = np.exp(weights -(max_weights +np.log(np.exp(weights-max_weights).sum())))
         
         # store results
         Z_list.append(np.copy(Z_hat))
@@ -168,9 +171,9 @@ def repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetion
     mean_array = np.zeros((len_list, M_num_repetions))
     var_array = np.zeros((len_list, M_num_repetions))
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
+    root_folder = os.getcwd()
     if save_res:
         now = datetime.datetime.now().isoformat()
-        root_folder = os.getcwd()
         os.mkdir('results_simulation_%s'%(now))
         os.chdir('results_simulation_%s'%(now))
     # run the samplers

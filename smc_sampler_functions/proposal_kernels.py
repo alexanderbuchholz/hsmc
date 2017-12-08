@@ -311,7 +311,7 @@ def loop_leapfrog(L_dict_list, x, p, epsilon, loggradient, temperature, covarian
     return x, p
     
 
-from joblib import Parallel, delayed
+#from joblib import Parallel, delayed
 
 def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     """
@@ -366,47 +366,47 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         L_steps = np.ones(N_particles, dtype=int)*L_steps
     #L_steps = np.ones(N_particles, dtype=int)*int(np.mean(L_steps))
     
-    L_dict_list = [{'iteration_L': iteration_L, 'L_step': L_step} for iteration_L, L_step in enumerate(L_steps)]
-    if parametersmcmc['parallelize'] == 'mutltiprocess': 
-        print('run parallelized code')
-        try:
-            partial_leapfrog_transition = partial(leapfrog_transition_individual, L_dict=L_dict_list, x_all=x, p_all=p, epsilon_all=epsilon, loggradient=temperedist.gradlogdensity, temperature=temperature, covariance_matrix=covariance_matrix)
-            #res_parallel = parallelize_partial_over_chunks(partial_leapfrog_transition, range(len(L_dict_list)))
-            #res_parallel = pool.map(partial_leapfrog_transition, range(len(L_dict_list)))
-            res_parallel = []
-            for i_index in range(len(L_dict_list)):
-                res_parallel.append(partial_leapfrog_transition(i_index))
-            #import ipdb; ipdb.set_trace()
-            p_inter = np.array([ires[1] for ires in res_parallel])[:,0,:]
-            x_inter = np.array([ires[0] for ires in res_parallel])[:,0,:]
-            index_inter = np.array([ires[2] for ires in res_parallel])
-            assert all([index_inter[i] <= index_inter[i+1] for i in range(len(index_inter)-1)])
-            x[:, :, 2], p[:, :, 2] = x_inter, p_inter
-        except:
-            import ipdb; ipdb.set_trace()
-    elif parametersmcmc['parallelize'] == 'cython': 
-        #import ipdb; ipdb.set_trace()
-        x, p = loop_leapfrog(L_dict_list, x, p, epsilon, temperedist.gradlogdensity, temperature, covariance_matrix)
-        #x, p = cython_loop_leapfrog(L_steps, x, p, epsilon, temperedist.gradlogdensity, temperature, covariance_matrix)
-    else:
-        x_finished = np.zeros((N_particles, dim))
-        p_finished = np.zeros((N_particles, dim))
-        x_start = x[:, :, 1]
-        p_start = p[:, :, 1]
-        indicator_just_finished = np.zeros(len(L_steps), dtype=bool)
-        indicator_active = np.ones(len(L_steps), dtype=bool)
-        #import ipdb; ipdb.set_trace()
-        for m_leapfrog_step in range(1, max(L_steps)+1):
-            indicator_active = (L_steps >= m_leapfrog_step)
-            (x_start[indicator_active,:], p_start[indicator_active,:]) = leapfr_mom_pos(x_start[indicator_active,:], p_start[indicator_active,:], epsilon[indicator_active], temperedist.gradlogdensity, temperature, covariance_matrix)
-            # half step for the energy
-            indicator_just_finished = L_steps==m_leapfrog_step
-            if np.any(indicator_just_finished):
-                p_finished[indicator_just_finished,:] = leapfr_mom(x_start[indicator_just_finished,:], p_start[indicator_just_finished,:], epsilon[indicator_just_finished], temperedist.gradlogdensity, temperature=temperature, half=True)
-                x_finished[indicator_just_finished,:] = x_start[indicator_just_finished,:]
-        x[:, :, -1] = x_finished
-        p[:, :, -1] = p_finished
-        #import ipdb; ipdb.set_trace()
+    #L_dict_list = [{'iteration_L': iteration_L, 'L_step': L_step} for iteration_L, L_step in enumerate(L_steps)]
+    # if parametersmcmc['parallelize'] == 'mutltiprocess': 
+    #     print('run parallelized code')
+    #     try:
+    #         partial_leapfrog_transition = partial(leapfrog_transition_individual, L_dict=L_dict_list, x_all=x, p_all=p, epsilon_all=epsilon, loggradient=temperedist.gradlogdensity, temperature=temperature, covariance_matrix=covariance_matrix)
+    #         #res_parallel = parallelize_partial_over_chunks(partial_leapfrog_transition, range(len(L_dict_list)))
+    #         #res_parallel = pool.map(partial_leapfrog_transition, range(len(L_dict_list)))
+    #         res_parallel = []
+    #         for i_index in range(len(L_dict_list)):
+    #             res_parallel.append(partial_leapfrog_transition(i_index))
+    #         #import ipdb; ipdb.set_trace()
+    #         p_inter = np.array([ires[1] for ires in res_parallel])[:,0,:]
+    #         x_inter = np.array([ires[0] for ires in res_parallel])[:,0,:]
+    #         index_inter = np.array([ires[2] for ires in res_parallel])
+    #         assert all([index_inter[i] <= index_inter[i+1] for i in range(len(index_inter)-1)])
+    #         x[:, :, 2], p[:, :, 2] = x_inter, p_inter
+    #     except:
+    #         import ipdb; ipdb.set_trace()
+    # elif parametersmcmc['parallelize'] == 'cython': 
+    #     #import ipdb; ipdb.set_trace()
+    #     x, p = loop_leapfrog(L_dict_list, x, p, epsilon, temperedist.gradlogdensity, temperature, covariance_matrix)
+    #     #x, p = cython_loop_leapfrog(L_steps, x, p, epsilon, temperedist.gradlogdensity, temperature, covariance_matrix)
+    #else:
+    x_finished = np.zeros((N_particles, dim))
+    p_finished = np.zeros((N_particles, dim))
+    x_start = x[:, :, 1]
+    p_start = p[:, :, 1]
+    indicator_just_finished = np.zeros(len(L_steps), dtype=bool)
+    indicator_active = np.ones(len(L_steps), dtype=bool)
+    #import ipdb; ipdb.set_trace()
+    for m_leapfrog_step in range(1, max(L_steps)+1):
+        indicator_active = (L_steps >= m_leapfrog_step)
+        (x_start[indicator_active,:], p_start[indicator_active,:]) = leapfr_mom_pos(x_start[indicator_active,:], p_start[indicator_active,:], epsilon[indicator_active], temperedist.gradlogdensity, temperature, covariance_matrix)
+        # half step for the energy
+        indicator_just_finished = L_steps==m_leapfrog_step
+        if np.any(indicator_just_finished):
+            p_finished[indicator_just_finished,:] = leapfr_mom(x_start[indicator_just_finished,:], p_start[indicator_just_finished,:], epsilon[indicator_just_finished], temperedist.gradlogdensity, temperature=temperature, half=True)
+            x_finished[indicator_just_finished,:] = x_start[indicator_just_finished,:]
+    x[:, :, -1] = x_finished
+    p[:, :, -1] = p_finished
+    #import ipdb; ipdb.set_trace()
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     ESJD[:, -1] = np.linalg.norm(x[:, :, -1] - x[:, :, 0])**2
     

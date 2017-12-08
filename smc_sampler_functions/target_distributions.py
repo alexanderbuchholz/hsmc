@@ -21,14 +21,25 @@ def h_sigmoid(x):
     return(1./(1+np.exp(-x)))
 
 
-def priorlogdens(particles):
+def priorlogdens(particles, parameters):
     """
     particles [N_partiles, dim]
     multivariate normal
     """
     return(multivariate_normal.logpdf(particles, cov=np.eye(particles.shape[1])))
 
-def priorgradlogdens(particles):
+def priorsampler(parameters):
+    """
+    particles [N_partiles, dim]
+    multivariate normal
+    """
+    N_particles = parameters['N_particles']
+    dim = parameters['dim']
+    res = np.random.normal(size=(N_particles, dim))
+    return(res)
+
+
+def priorgradlogdens(particles, parameters):
     """
     particles [N_partiles, dim]
     """
@@ -211,6 +222,7 @@ def approx_gradient(function, x, h=0.00001):
         x_2[:,i] = x[:,i]-h
         grad_vector[:,i] = (function(x_1)-function(x_2))/(2*h)
     return(grad_vector)
+
 
 
 if __name__ == '__main__':
