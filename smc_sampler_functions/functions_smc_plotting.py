@@ -123,10 +123,14 @@ def plot_repeated_simulations(results_dict):
 
             Z_var = np.log(np.mean(norm_constant_list[i,:]**2))
 
-            mse_list.append([np.round(log_mse_mean_iteration, decimals=3), np.round(log_mse_var_iteration, decimals=3), np.round(Z_var, decimals=3)])
+            mse_list.append([np.round(log_mse_mean_iteration, decimals=3), 
+                                np.round(log_mse_var_iteration, decimals=3), 
+                                np.round(Z_var, decimals=3),
+                                np.round(np.mean(results_dict['runtime_list'][i,:]), decimals=3)
+                                ])
             
         rows = names_samplers
-        columns = ['log MSE mean', 'log MSE var', 'log MSE Z']
+        columns = ['log MSE mean', 'log MSE var', 'log MSE Z', 'runtime sec']
 
 
 
@@ -140,10 +144,14 @@ def plot_repeated_simulations(results_dict):
             log_mse_var_iteration = np.log(var_iteration)
             Z_var = np.log(np.var(norm_constant_list[i,:]))
 
-            mse_list.append([np.round(log_mse_mean_iteration, decimals=3), np.round(log_mse_var_iteration, decimals=3), np.round(Z_var, decimals=3)])
+            mse_list.append([np.round(log_mse_mean_iteration, decimals=3), 
+                                np.round(log_mse_var_iteration, decimals=3), 
+                                np.round(Z_var, decimals=3),
+                                np.round(np.mean(results_dict['runtime_list'][i,:]), decimals=3)
+                                ])
         
         rows = names_samplers
-        columns = ['log var mean', 'log var var', 'log var Z']
+        columns = ['log var mean', 'log var var', 'log var Z', 'runtime sec']
 
     ax4.axis('off')
     ax4.table(cellText=mse_list,
