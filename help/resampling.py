@@ -17,8 +17,9 @@ for more information.
 
 import numpy as np
 from numpy.random import random
+from numba import jit
 
-
+@jit
 def resampling_inverse_transform(u_ordered, weights):
     """
     the resampling method as implemented in the SQMC paper
@@ -160,7 +161,7 @@ def systematic_resample(weights):
             j += 1
     return indexes
 
-
+@jit
 def multinomial_resample(weights):
     """ This is the naive form of roulette sampling where we compute the
     cumulative sum of the weights and then use binary search to select the

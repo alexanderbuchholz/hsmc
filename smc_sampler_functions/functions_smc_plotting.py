@@ -2,6 +2,7 @@
 from matplotlib import pyplot as plt
 import seaborn as sns
 import numpy as np
+from tabulate import tabulate
 
 def plot_results_single_simulation(results_list):
     """
@@ -91,7 +92,7 @@ def plot_repeated_simulations(results_dict):
     ax1 = fig.add_subplot(221)
     ax2 = fig.add_subplot(222)
     ax3 = fig.add_subplot(223)
-    ax4 = fig.add_subplot(224)
+    #ax4 = fig.add_subplot(224)
     #plt.subplot(221)
     ax1.boxplot(norm_constant_list.transpose(), labels=names_samplers)
     ax1.set_title('normalization constant')
@@ -130,7 +131,7 @@ def plot_repeated_simulations(results_dict):
                                 ])
             
         rows = names_samplers
-        columns = ['log MSE mean', 'log MSE var', 'log MSE Z', 'runtime sec']
+        columns = ['log MSE mean', 'log MSE var', 'log MSE Z', 'mean runtime sec']
 
 
 
@@ -151,13 +152,19 @@ def plot_repeated_simulations(results_dict):
                                 ])
         
         rows = names_samplers
-        columns = ['log var mean', 'log var var', 'log var Z', 'runtime sec']
+        columns = ['log var mean', 'log var var', 'log var Z', 'mean runtime sec']
 
-    ax4.axis('off')
-    ax4.table(cellText=mse_list,
-                      rowLabels=rows,
-                      colLabels=columns, 
-                      loc='center')
+    #ax4.axis('off')
+    #ax4.table(cellText=mse_list,
+    #                  rowLabels=rows,
+    #                  colLabels=columns, 
+    #                  loc='center')
+    
+    data_list = []
+    for i, name in enumerate(names_samplers):
+        data_list.append([name] + mse_list[i])
+    
+    print(tabulate(data_list, columns, tablefmt="latex", floatfmt=".2f"))
     #import pdb; pdb.set_trace()
     plt.savefig('repeated_simulation_%s_dim_%s.png' %(results_dict['target_name'], results_dict['parameters']['dim']))
     plt.show()

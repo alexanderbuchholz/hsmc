@@ -451,3 +451,98 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
     return particles_next, performance_kernel_dict
 
+from help.gaussian_densities_etc import gaussian_vectorized
+
+def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, temperature):
+    """
+    function that computes the entire trajectory of leapfrog steps
+    """
+    assert isinstance(parametersmcmc, dict)
+    assert temperature <= 1.
+    assert temperature >= 0.
+
+    covariance_matrix = parametersmcmc['covariance_matrix']
+    #import ipdb; ipdb.set_trace()
+    l_matrix = np.linalg.cholesky(covariance_matrix)
+    l_matrix_inv = np.linalg.inv(l_matrix)
+    N_particles, dim = particles.shape
+    L_steps = int(np.mean(parametersmcmc['L_steps']))
+    if 'epsilon_sampled' in parametersmcmc.keys():
+        epsilon = parametersmcmc['epsilon_sampled']
+    else:
+        epsilon = np.atleast_2d(parametersmcmc['epsilon']).mean(axis=0)
+    #import ipdb; ipdb.set_trace()
+    if epsilon.shape[0] == 1:
+        epsilon = np.ones((N_particles,1))*epsilon
+
+    
+    # preallocate the arrays
+    
+    x = np.zeros((N_particles, dim, L_steps+1))
+    energy_kinetic = np.zeros((N_particles, L_steps+1))
+    energy_potential = np.zeros((N_particles, L_steps+1))
+    marginal_ESJD = np.zeros((N_particles, L_steps+1))
+    ESJD = np.zeros((N_particles, L_steps+1))
+    p = np.zeros((N_particles, dim, L_steps+2)) # velocity
+
+    # start with t = 0
+    x[:, :, 0] = particles
+    particles_next = np.zeros(particles.shape)
+    if particles.shape != u_randomness.shape: 
+        raise ValueError('shape differ')
+    p[:, :, 0] = gaussian_vectorized(u_randomness).dot(l_matrix_inv)
+
+    energy_kinetic[:, 0], energy_potential[:, 0] = f_energy(x[:, :, 0], p[:, :, 0], temperedist.logdensity, temperature, covariance_matrix)
+
+    # First half-step of leapfrog.
+    p[:, :, 1] = leapfr_mom(x[:, :, 0], p[:, :, 0], epsilon, temperedist.gradlogdensity, temperature=temperature, half=True)
+    x[:, :, 1] = leapfr_pos(x[:, :, 0], p[:, :, 1], epsilon, covariance_matrix)
+    inter_momentum = leapfr_mom(x[:, :, 1], p[:, :, 1], epsilon, temperedist.gradlogdensity, temperature=temperature, half=True)
+    energy_kinetic[:, 1], energy_potential[:, 1] = f_energy(x[:, :, 1], inter_momentum, temperedist.logdensity, temperature, covariance_matrix)
+
+    for m_leapfrog_step in range(1, L_steps):
+        #pdb.set_trace()
+        (x[:, :, m_leapfrog_step+1], p[:, :, m_leapfrog_step+1]) = leapfr_mom_pos(x[:, :, m_leapfrog_step], p[:, :, m_leapfrog_step], epsilon, temperedist.gradlogdensity, temperature, covariance_matrix)
+        # half step for the energy
+        inter_momentum = leapfr_mom(x[:, :, m_leapfrog_step+1], p[:, :, m_leapfrog_step+1], epsilon, temperedist.gradlogdensity, temperature=temperature, half=True)
+        energy_kinetic[:, m_leapfrog_step+1], energy_potential[:, m_leapfrog_step+1] = f_energy(x[:, :, m_leapfrog_step+1], inter_momentum, temperedist.logdensity, temperature, covariance_matrix)
+        marginal_ESJD[:, m_leapfrog_step] = ((x[:, :, m_leapfrog_step] - x[:, :, 0])*-p[:, :, m_leapfrog_step]).sum(axis=1)
+        ESJD[:, m_leapfrog_step] = ((x[:, :, m_leapfrog_step] - x[:, :, 0])*(x[:, :, m_leapfrog_step] - x[:, :, 0])).sum(axis=1)
+
+    p[:, :, -1] = leapfr_mom(x[:, :, -1], p[:, :, -2], epsilon, temperedist.gradlogdensity, temperature, half=True)
+    energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
+    marginal_ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*-p[:, :, -1]).sum(axis=1)
+    ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*(x[:, :, -1] - x[:, :, 0])).sum(axis=1)
+
+    # accept all particles if using HMC IS
+    energy_total = energy_kinetic + energy_potential
+    Hamiltonian_cur = energy_total[:, 0]
+    # chooses only the energy that corresponds to the number of leapfrog steps
+    Hamiltonian_new = energy_total[:, -1]
+    logprobaccept = Hamiltonian_cur-Hamiltonian_new
+    unif_accept = np.log(np.random.rand(N_particles))
+    # accept reject step
+    if (~np.isfinite(logprobaccept)).any():
+        warnings.warn('some divergent behaviour on #particles '+str(sum(~np.isfinite(logprobaccept))))
+        selector = ~np.isfinite(logprobaccept)
+        logprobaccept[selector] = -np.inf
+        energy_total[selector] = np.inf
+
+    accepted = np.ones(N_particles, dtype=bool)
+    #pdb.set_trace()
+    particles_next[:, :] = x[accepted, :, -1]
+    jumping_distance_realized = ((particles_next-particles)*(particles_next-particles)).sum(axis=1)
+            
+    performance_kernel_dict = {'energy': energy_total, 
+                                'energy_kinetic' : energy_kinetic,
+                                'energy_potential' : energy_potential,
+                                'squarejumpdist':ESJD,
+                                'squarejumpdist_realized':jumping_distance_realized,
+                                'acceptance_rate':accepted.mean(),
+                                'epsilon':epsilon,
+                                'L':L_steps}
+    #import ipdb; ipdb.set_trace()
+    if parametersmcmc['verbose']:
+        print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
+    return particles_next, performance_kernel_dict
+
