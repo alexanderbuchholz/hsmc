@@ -114,7 +114,7 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'parallelize' : False,
                       'verbose' : verbose,
                       'move_steps': move_steps_hmc,
-                      'mean_L' : False
+                      'mean_L' : True
                       }
 
 
@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     #samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
-    samplers_list_dict = [hmcdict2, maladict]
+    samplers_list_dict = [hmcdict1, hmcdict2, maladict, rwdict]
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
@@ -144,11 +144,11 @@ if __name__ == '__main__':
     #targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
     priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
     targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
-    #targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+    targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
     #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
 
-    target_dist_list = [targetdistribution1]
+    target_dist_list = [targetdistribution1, targetdistribution2]
     #target_dist_list = [targetdistribution2, targetdistribution3
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
