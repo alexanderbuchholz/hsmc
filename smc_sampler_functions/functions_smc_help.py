@@ -6,6 +6,8 @@ from statsmodels.regression.quantile_regression import QuantReg
 
 import sys
 from help import resampling
+from help.hilbert import brutehilbertsort
+from help.resampling import resampling_inverse_transform
 
 from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
@@ -91,6 +93,39 @@ def ESS_target_dichotomic_search(temperaturenext, temperatureprevious, ESStarget
     #import ipdb; ipdb.set_trace()
     return ESS_res-ESStarget
 
+def logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict):
+    """
+    returns the log incremental weights
+    """
+    temperatureprevious, temperaturecurrent  = temperature[0], temperature[1]
+    assert temperaturecurrent >= temperatureprevious
+    #import ipdb; ipdb.set_trace()
+    denominator = -perfkerneldict['energy_kinetic'][:,0]+temperedist.logdensity(particles_previous, temperatureprevious)
+    numerator = -perfkerneldict['energy_kinetic'][:,-1]+temperedist.logdensity(particles, temperaturecurrent)
+    # previous version for MCMC type kernel
+    #numerator =  temperedist.logdensity(particles, temperature=temperaturecurrent)
+    #denominator = temperedist.logdensity(particles, temperature=temperatureprevious)
+    #import ipdb; ipdb.set_trace()
+    return numerator - denominator
+
+def reweight_is(particles, particles_previous, temperedist, temperature, weights_normalized, perfkerneldict):
+    """
+    log incremental weights based on the temperature
+    """
+    #import ipdb; ipdb.set_trace()
+    incweights = logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict)+np.log(weights_normalized)
+    return incweights
+
+
+
+def ESS_target_dichotomic_search_is(temperaturenext, temperatureprevious, ESStarget, particles, particles_previous, temperedist, weights_normalized, perfkerneldict):
+    weights = reweight_is(particles, particles_previous, temperedist, [temperatureprevious, temperaturenext], weights_normalized, perfkerneldict)
+    weights_normalized_new = np.exp(weights)/np.exp(weights).sum()
+    ESS_res = ESS(weights_normalized_new)
+    #import ipdb; ipdb.set_trace()
+    return ESS_res-ESStarget
+
+
 def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
     """
     function that samples weighted epsilon and L 
@@ -127,7 +162,9 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
     # choose based on sampling
     weights_esjd = weighted_squarejumpdist_flat/np.nansum(weighted_squarejumpdist_flat)
     if np.isnan(weights_esjd).any():
-        import ipdb; ipdb.set_trace()
+        nan_selector = np.isnan(weighted_squarejumpdist_flat)
+        weighted_squarejumpdist_flat[nan_selector] = 0
+        #import ipdb; ipdb.set_trace()
     #import ipdb; ipdb.set_trace()
     #weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
     res = np.random.choice(range(weights_esjd.shape[0]), size=N_particles, p=weights_esjd)
@@ -249,6 +286,32 @@ def tune_mcmc_parameters(perfkerneldict, proposalkerneldict):
 
     res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
     return res_dict
+
+
+def hilbert_sampling(particles, weights_normalized, u_randomness):
+    # order the qmc points first
+    u_to_order = u_randomness[:,0]
+    u_indices_ordering = np.argsort(u_to_order)
+    u_ordered = u_to_order[u_indices_ordering]
+    # hilbert sort the particles
+    particles_permutation  = brutehilbertsort(particles)
+    # use the permutation on the weights
+    weights_normalized_ordered = weights_normalized[particles_permutation]
+    # samples ancestors
+    ancestors = resampling_inverse_transform(u_ordered, weights_normalized_ordered)
+    #particles_resampled = np.copy(particles[ancestors[particles_permutation.tolist()].tolist(), :])
+    particles_resampled = np.copy(particles[particles_permutation[ancestors.tolist()].tolist(), :])
+    u_randomness_ordered = u_randomness[u_indices_ordering, :]
+    weights_normalized_new = np.ones(weights_normalized.shape)/weights_normalized.shape[0]
+    return particles_resampled, weights_normalized_new, u_randomness_ordered
+
+
+def resampling_is(particles, weights_normalized, u_randomness):
+    ancestors = resampling.systematic_resample(weights_normalized)
+    particles_resampled = particles[ancestors,:]
+    weights_normalized_new = np.ones(weights_normalized.shape)/weights_normalized.shape[0]
+    return particles_resampled, weights_normalized_new, u_randomness
+
 
 if __name__ == '__main__':
     print(resampling.multinomial_resample([0.5, 0.5]))

@@ -22,13 +22,13 @@ except:
     dim = 10
 N_particles = 2**10
 T_time = 20
-move_steps_hmc = 1
-move_steps_rw_mala = 1
+move_steps_hmc = 10
+move_steps_rw_mala = 40
 ESStarget = 0.5
-M_num_repetions = 1
+M_num_repetions = 40
 epsilon = 1.
 epsilon_hmc = .1
-verbose = True
+verbose = False
 #rs = np.random.seed(1)
 targetmean = np.ones(dim)*2.
 #targetvariance = np.eye(dim)*0.1
@@ -88,7 +88,7 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'proposalname' : 'HMC_L_random',
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
-                      'L_steps' : 10,
+                      'L_steps' : 100,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
@@ -105,7 +105,7 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'proposalname' : 'HMC',
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
-                      'L_steps' : 10,
+                      'L_steps' : 100,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
@@ -114,7 +114,7 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'parallelize' : False,
                       'verbose' : verbose,
                       'move_steps': move_steps_hmc,
-                      'mean_L' : True
+                      'mean_L' : False
                       }
 
 
@@ -160,7 +160,7 @@ if __name__ == '__main__':
         #import ipdb; ipdb.set_trace()
         res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
         from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
-        plot_repeated_simulations(res_repeated_sampling)
+        #plot_repeated_simulations(res_repeated_sampling)
         plot_results_single_simulation(res_first_iteration)
         import ipdb; ipdb.set_trace()
 
