@@ -162,6 +162,6 @@ if __name__ == '__main__':
         from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
         #plot_repeated_simulations(res_repeated_sampling)
         plot_results_single_simulation(res_first_iteration)
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
 
 
