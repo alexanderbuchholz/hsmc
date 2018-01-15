@@ -466,11 +466,14 @@ def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, tempera
     l_matrix = np.linalg.cholesky(covariance_matrix)
     l_matrix_inv = np.linalg.inv(l_matrix)
     N_particles, dim = particles.shape
+
     L_steps = int(np.mean(parametersmcmc['L_steps']))
+    #L_steps = int(np.percentile(parametersmcmc['L_steps'], 0.5))
     if 'epsilon_sampled' in parametersmcmc.keys():
         epsilon = parametersmcmc['epsilon_sampled']
     else:
-        epsilon = np.atleast_2d(parametersmcmc['epsilon']).mean(axis=0)
+        #epsilon = np.atleast_2d(parametersmcmc['epsilon']).mean(axis=0)
+        epsilon = np.atleast_2d(np.percentile(parametersmcmc['epsilon'], 50))
     #import ipdb; ipdb.set_trace()
     if epsilon.shape[0] == 1:
         epsilon = np.ones((N_particles,1))*epsilon

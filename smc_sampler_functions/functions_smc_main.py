@@ -224,7 +224,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
         pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
     os.chdir(root_folder)
     #root_folder = os.getcwd()
-    import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     return(all_dict, res_first_iteration)
 
 

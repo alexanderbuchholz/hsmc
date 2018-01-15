@@ -126,26 +126,39 @@ def ESS_target_dichotomic_search_is(temperaturenext, temperatureprevious, ESStar
     return ESS_res-ESStarget
 
 
-def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict):
+def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptance=False):
     """
     function that samples weighted epsilon and L 
     """
     # case of mala and rw
     if len(perfkerneldict['energy'].shape)==1:
-        energy = perfkerneldict['energy']
-        squarejumpdist = perfkerneldict['squarejumpdist']
+        energy = perfkerneldict['energy'][:,np.newaxis]
+        squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
         N_particles, L_total = energy.shape[0], 1
         energy_quant_reg = energy
     # case of hmc
     else: 
-        energy = perfkerneldict['energy'][:,1:]-perfkerneldict['energy'][:,:1]
+        energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
         squarejumpdist = perfkerneldict['squarejumpdist'][:,1:]
         N_particles, L_total = energy.shape
         energy_quant_reg = energy[:,-1]
-        
 
-    epsilon = np.tile(perfkerneldict['epsilon'], (1, L_total))
-    L_steps = np.tile(np.arange(1, L_total+1), (N_particles, 1))
+    # procedure that filters out trajectories with too high variation
+    if 'trajectory_selector_energy' in proposalkerneldict.keys():
+        if proposalkerneldict['trajectory_selector_energy']:
+            #import ipdb; ipdb.set_trace()
+            #from matplotlib import pyplot as plt
+            #plt.plot(energy[:,:].transpose()); plt.show()
+            selector_trajectory = ~np.any(np.abs(energy[:,:])>0.1, axis=1)
+        else: 
+            selector_trajectory = np.ones(N_particles, dtype=bool)
+    else: 
+        selector_trajectory = np.ones(N_particles, dtype=bool)
+    
+    energy = energy[selector_trajectory,:]
+    epsilon = np.tile(perfkerneldict['epsilon'][selector_trajectory,:], (1, L_total))
+    L_steps = np.tile(np.arange(1, L_total+1), (selector_trajectory.sum(), 1))
+    squarejumpdist = squarejumpdist[selector_trajectory,:]
 
     energy_weights = np.clip(np.exp(energy), 0., 1.)
     # flatten arrays
@@ -216,7 +229,7 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
         energy_quant_reg = energy
     # case of hmc
     else: 
-        energy = perfkerneldict['energy'][:,1:]-perfkerneldict['energy'][:,:1]
+        energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
         energy_quant_reg = energy[:,-1]
     epsilon = perfkerneldict['epsilon'].flatten()
     #import ipdb; ipdb.set_trace()
@@ -271,14 +284,14 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
 
 
 
-def tune_mcmc_parameters(perfkerneldict, proposalkerneldict):
+def tune_mcmc_parameters(perfkerneldict, proposalkerneldict, high_acceptance=False):
     """
     function that tunes the parameters
     input: dictionnary with the performance of the kernels
     output:
     """
     if proposalkerneldict['sample_eps_L']:
-        epsilon_next, L_next = sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict)
+        epsilon_next, L_next = sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptance=high_acceptance)
         __, epsilon_max = quantile_regression_epsilon(perfkerneldict, proposalkerneldict)
     else: 
         epsilon_next, epsilon_max = quantile_regression_epsilon(perfkerneldict, proposalkerneldict)

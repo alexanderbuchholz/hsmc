@@ -124,7 +124,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
             perfkerneldict['temp'] = temp_curr
             del proposalkerneldict_temp['epsilon_sampled'] # deleted because also available in output perfkerneldict
             
-            results_tuning = tune_mcmc_parameters(perfkerneldict, proposalkerneldict_temp)
+            results_tuning = tune_mcmc_parameters(perfkerneldict, proposalkerneldict_temp, high_acceptance=True)
             proposalkerneldict_temp['epsilon'] = results_tuning['epsilon_next']
             proposalkerneldict_temp['epsilon_max'] = results_tuning['epsilon_max']
             proposalkerneldict_temp['L_steps'] = results_tuning['L_next']
@@ -150,7 +150,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
                     weights_normalized=weights_normalized, 
                     perfkerneldict=perfkerneldict)
             temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=100)
-            if partial_ess_target(temp_next)<-0.01:
+            if partial_ess_target(temp_next)<-0.1:
                 #import ipdb; ipdb.set_trace()
                 temp_next = temp_curr
             print('temperature %s' %(temp_next), end='\r')
@@ -241,7 +241,68 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
         'proposal_kernel': proposalkerneldict_temp,
         'run_time' : run_time,
         'perf_list' : perf_list,
-        'target_name' : temperedist.target_name
+        'target_name' : temperedist.target_name,
+        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean()
         }
     #import ipdb; ipdb.set_trace()
     return res_dict
+
+
+def repeat_sampling_is(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_res_intermediate=False, save_name=''):
+    # function that repeats the sampling
+    len_list = len(samplers_list_dict)
+    dim = parameters['dim']
+    N_particles = parameters['N_particles']
+    norm_constant_list = np.zeros((len_list, M_num_repetions))
+    mean_array = np.zeros((len_list, M_num_repetions, dim))
+    var_array = np.zeros((len_list, M_num_repetions, dim, dim))
+    ESJD_array = np.zeros((len_list, M_num_repetions))
+    temp_steps_array = np.zeros((len_list, M_num_repetions))
+    particles_array = np.zeros((N_particles, dim, len_list, M_num_repetions))
+    names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
+    runtime_list = np.zeros((len_list, M_num_repetions))
+    L_mean_array = np.zeros((len_list, M_num_repetions))
+    root_folder = os.getcwd()
+    if save_res:
+        now = datetime.datetime.now().isoformat()
+        os.mkdir('results_simulation_%s'%(now))
+        os.chdir('results_simulation_%s'%(now))
+    # run the samplers
+    res_first_iteration = []
+    for m_repetition in range(M_num_repetions):
+        print("repetition %s of %s" %(m_repetition, M_num_repetions), end='\n')
+        for k, sampler_dict in enumerate(samplers_list_dict):
+            res_dict = smc_sampler_is_qmc(temperedist,  parameters, sampler_dict)
+            # save the first instance
+            if m_repetition == 0:
+                res_first_iteration.append(res_dict)
+            norm_constant_list[k, m_repetition] = np.sum(res_dict['Z_list'])
+            mean_array[k, m_repetition,:] = res_dict['mean_list'][-1]
+            ESJD_array[k, m_repetition] = res_dict['perf_list'][-1]['squarejumpdist_realized'].mean()
+            L_mean_array[k, m_repetition] = res_dict['L_mean']
+            temp_steps_array[k, m_repetition] = len(res_dict['temp_list'])
+            #import ipdb; ipdb.set_trace()
+            var_array[k, m_repetition,:,:] = res_dict['var_list'][-1]
+            runtime_list[k, m_repetition] = res_dict['run_time']
+            particles_array[:,:,k, m_repetition] = res_dict['particles_resampled']
+            if save_res_intermediate:
+                pickle.dump(res_dict, open('%sis_sampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
+    all_dict = {'parameters': parameters, 
+                'norm_const' : norm_constant_list, 
+                'mean_array' : mean_array, 
+                'var_array' :  var_array, 
+                'names_samplers' : names_samplers,
+                'M_num_repetions' : M_num_repetions,
+                'target_name' : temperedist.target_name, 
+                'particles_array' : particles_array, 
+                'runtime_list' : runtime_list, 
+                'ESJD_list': ESJD_array, 
+                'temp_steps' : temp_steps_array, 
+                'L_mean' : L_mean_array
+                }
+    if save_res:
+        pickle.dump(all_dict, open('%s_%s_all_dict_is_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
+    os.chdir(root_folder)
+    #root_folder = os.getcwd()
+    #import ipdb; ipdb.set_trace()
+    return(all_dict, res_first_iteration)
