@@ -178,7 +178,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
         variances_weighted = np.cov(particles, rowvar=False, aweights=weights_normalized)
         mean_list.append(means_weighted)
         var_list.append(variances_weighted)
-        temp_list.append(temp_curr)
+        temp_list.append(temp_next)
         # delete some attributes from the perfkerneldict, 
         del perfkerneldict['energy']; del perfkerneldict['squarejumpdist']
         perf_list.append(perfkerneldict)
@@ -211,7 +211,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
             variances_weighted = np.cov(particles, rowvar=False, aweights=weights_normalized)
             mean_list.append(means_weighted)
             var_list.append(variances_weighted)
-            temp_list.append(temp_curr)
+            temp_list.append(temp_next)
             # delete some attributes from the perfkerneldict, 
             del perfkerneldict['energy']; del perfkerneldict['squarejumpdist']
             perf_list.append(perfkerneldict)
