@@ -10,6 +10,7 @@ from scipy.special import gamma
 
 import sys
 import os
+import copy
 
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
@@ -25,14 +26,15 @@ T_time = 20
 move_steps_hmc = 10
 move_steps_rw_mala = 40
 ESStarget = 0.5
-M_num_repetions = 40
+M_num_repetions = 1
 epsilon = 1.
 epsilon_hmc = .1
 verbose = False
 #rs = np.random.seed(1)
 targetmean = np.ones(dim)*2.
 #targetvariance = np.eye(dim)*0.1
-targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
+#targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
+targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
 targetvariance_inv = np.linalg.inv(targetvariance)
 l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
 parameters = {'dim' : dim, 
@@ -43,7 +45,7 @@ parameters = {'dim' : dim,
               'l_targetvariance_inv':l_targetvariance_inv,
               'df' : 5,
               'T_time' : T_time,
-              'autotempering' : False,
+              'autotempering' : True,
               'ESStarget': ESStarget,
               'adaptive_covariance' : True
              }
@@ -52,8 +54,10 @@ parameters = {'dim' : dim,
 
 
 # prepare the kernels and specify parameters
-from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
+from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
+from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel, proposalhmc_is
 from smc_sampler_functions.functions_smc_main import smc_sampler
+from smc_sampler_functions.functions_smc_is_main import smc_sampler_is_qmc
 
 
 maladict = {'proposalkernel_tune': proposalmala,
@@ -118,12 +122,37 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       }
 
 
+hmcdict_is_mc = {'proposalkernel_tune': proposalhmc_is,
+                      'proposalkernel_sample': proposalhmc_is,
+                      'proposalname' : 'HMC IS MC',
+                      'target_probability' : 0.9,
+                      'covariance_matrix' : np.eye(dim), 
+                      'L_steps' : 100,
+                      'epsilon' : np.array([epsilon_hmc]),
+                      'epsilon_max' : np.array([epsilon_hmc]),
+                      'accept_reject' : False,
+                      'tune_kernel': True,
+                      'sample_eps_L' : True,
+                      'parallelize' : False,
+                      'verbose' : verbose,
+                      'move_steps': move_steps_hmc,
+                      'mean_L' : True,
+                      'unif_sampler' : random_sequence_mc, 
+                      'trajectory_selector_energy' : True
+                      }
+hmcdict_is_qmc = copy.copy(hmcdict_is_mc)
+hmcdict_is_qmc["unif_sampler"] = random_sequence_rqmc
+hmcdict_is_qmc["proposalname"] = 'HMC IS QMC'
+
+
 
 if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
+    from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
     #samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
-    samplers_list_dict = [hmcdict1, hmcdict2, maladict, rwdict]
+    samplers_list_dict = [maladict, hmcdict1, hmcdict2, rwdict]
+    samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
@@ -159,9 +188,10 @@ if __name__ == '__main__':
         #yappi.get_func_stats().print_all()
         #import ipdb; ipdb.set_trace()
         res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
-        from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
+        res_repeated_sampling_is, res_first_iteration_is = repeat_sampling_is(samplers_list_dict_is, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
+        #from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
         #plot_repeated_simulations(res_repeated_sampling)
-        plot_results_single_simulation(res_first_iteration)
+        #plot_results_single_simulation(res_first_iteration)
         #import ipdb; ipdb.set_trace()
 
 
