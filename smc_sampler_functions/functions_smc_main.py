@@ -45,7 +45,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
 
     
     # intialize sampler
-    particles = temperedist.priorsampler(parameters)
+    u_randomness = np.random.random(size=(N_particles, dim))
+    particles = temperedist.priorsampler(parameters, u_randomness)
     weights_normalized = np.ones(N_particles)/N_particles
     #Z_hat = 0.#np.log((2*np.pi)**(dim/2.))
     #Z_list.append(Z_hat)

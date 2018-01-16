@@ -149,7 +149,7 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptanc
             #import ipdb; ipdb.set_trace()
             #from matplotlib import pyplot as plt
             #plt.plot(energy[:,:].transpose()); plt.show()
-            selector_trajectory = ~np.any(np.abs(energy[:,:])>0.1, axis=1)
+            selector_trajectory = ~np.any(np.abs(energy[:,:])>0.05, axis=1)
         else: 
             selector_trajectory = np.ones(N_particles, dtype=bool)
     else: 

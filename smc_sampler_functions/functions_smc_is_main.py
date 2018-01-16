@@ -67,7 +67,8 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
     
     # pre allocate data
     u_randomness = unif_sampler(dim*2, 0, N_particles)
-    particles_initial = gaussian_vectorized(u_randomness[:, :dim])
+    particles_initial = temperedist.priorsampler(parameters, u_randomness[:, :dim])
+    #particles_initial = gaussian_vectorized(u_randomness[:, :dim])
     particles, perfkerneldict = proposalkernel_sample(particles_initial, u_randomness[:, dim:], proposalkerneldict_temp, temperedist, 0)
 
     weights_normalized = np.ones(N_particles)/N_particles

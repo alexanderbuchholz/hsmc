@@ -10,7 +10,7 @@ from scipy.stats import norm
 from scipy.special import gamma
 import sys
 sys.path.append("../help/")
-
+from help.gaussian_densities_etc import gaussian_vectorized
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
 from numba import jit
@@ -28,14 +28,15 @@ def priorlogdens(particles, parameters):
     """
     return(multivariate_normal.logpdf(particles, cov=np.eye(particles.shape[1])))
 
-def priorsampler(parameters):
+def priorsampler(parameters, u_randomness):
     """
     particles [N_partiles, dim]
     multivariate normal
     """
-    N_particles = parameters['N_particles']
-    dim = parameters['dim']
-    res = np.random.normal(size=(N_particles, dim))
+    #N_particles = parameters['N_particles']
+    #dim = parameters['dim']
+    #res = np.random.normal(size=(N_particles, dim))
+    res = gaussian_vectorized(u_randomness)
     return(res)
 
 
@@ -145,13 +146,11 @@ def logit(x):
     return np.exp(-x)/(1.+np.exp(-x))
     #return ne.evaluate('exp(-x)/(1+exp(-x))')
 
-logit(1)
 
 #@jit(nopython=True)
 def logexp(x):
     #return ne.evaluate('log(1+exp(x))')
     return np.log(1.+np.exp(-x))
-logexp(1)
 
 
 #@profile

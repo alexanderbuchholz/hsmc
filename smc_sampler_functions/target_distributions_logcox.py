@@ -4,6 +4,9 @@ import numpy as np
 import numexpr as ne
 from numba import jit
 from matplotlib import pyplot as plt
+import sys
+sys.path.append("../help/")
+from help.gaussian_densities_etc import gaussian_vectorized
 
 # parameters of the model
 def f_dict_log_cox(N):
@@ -88,7 +91,7 @@ def priorlogdens_log_cox(X, parameters):
     res = -0.5*(inv_covar.dot(meaned_x)*meaned_x).sum(axis=0)
     return(res)
 
-def priorsampler_log_cox(parameters):
+def priorsampler_log_cox(parameters, u_randomness):
     """
     particles [N_partiles, dim]
     multivariate normal
@@ -96,7 +99,9 @@ def priorsampler_log_cox(parameters):
     N_particles = parameters['N_particles']
     dim = parameters['dim']
     mu_mean = parameters['mu_mean']
-    res = np.random.normal(size=(N_particles, dim)).dot(parameters['l_covar'])+mu_mean.flatten()
+    white_noise = gaussian_vectorized(u_randomness)
+    #res = np.random.normal(size=(N_particles, dim)).dot(parameters['l_covar'])+mu_mean.flatten()
+    res = white_noise.dot(parameters['l_covar'])+mu_mean.flatten()
     return(res)
 
 
