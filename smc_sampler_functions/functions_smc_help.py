@@ -13,6 +13,7 @@ from matplotlib import pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.stats import chi2
 
 class sequence_distributions(object):
     """
@@ -56,6 +57,16 @@ class sequence_distributions(object):
         assert temperature>=0.
         return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles, self.parameters)*(1.-temperature)
 
+
+def test_continue_sampling(particles, temperature, temperedist):
+    gradients = temperedist.gradlogdensity(particles, temperature)
+    grad_cov = np.cov(gradients.transpose())
+    inv_grad_cov = np.linalg.inv(grad_cov)
+    N_particles, df = gradients.shape
+    test_statistic = gradients.mean(axis=0).dot(inv_grad_cov).dot(gradients.mean(axis=0))*N_particles
+    quantile = chi2.ppf(0.95, df=df)
+    test_decision = test_statistic<quantile
+    return(test_decision)
 
 def logincrementalweights(particles, temperedist, temperature):
     """

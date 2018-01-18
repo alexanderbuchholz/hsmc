@@ -1,7 +1,7 @@
 # smc sampler
 from __future__ import print_function
 import numpy as np
-from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters
+from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling
 from functools import partial
 
 import sys
@@ -89,6 +89,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         for move in range(move_steps):
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
             temp_list.append(temp_curr)
+            test_continue_sampling(particles, temp_curr, temperedist)
+
             #import ipdb; ipdb.set_trace()
             #np.random.shuffle(proposalkerneldict_temp['epsilon'])
             #np.random.shuffle(proposalkerneldict_temp['L_steps'])
@@ -142,6 +144,9 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     for move in range(move_steps):
         particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
         temp_list.append(temp_curr)
+        if not test_continue_sampling(particles, temp_curr, temperedist):
+            break
+        import ipdb; ipdb.set_trace()
         #np.random.shuffle(proposalkerneldict_temp['epsilon'])
         #np.random.shuffle(proposalkerneldict_temp['L_steps'])
     #pdb.set_trace()

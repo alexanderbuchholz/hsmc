@@ -103,6 +103,35 @@ def targetgradlogdens_student(particles, parameters):
     factor_3 = (2./parameters['df'])*(particles-parameters['targetmean']).dot(parameters['targetvariance_inv'])
     return(factor_1*factor_3/factor_2[:,np.newaxis])
 
+def targetlogdens_banana(particles, parameters):
+    return( -(100*(particles[:, 1::2]**2 - particles[:, ::2])**2 + (particles[:, 1::2] - 1)**2).sum(axis=1))
+
+def targetgradlogdens_banana(particles, parameters):
+    uneven = -200*2*particles[:, 1::2]*(particles[:, 1::2]**2 - particles[:, ::2]) + 2*(particles[:, 1::2]-1)
+    even = 200*(particles[:, 1::2]**2 - particles[:, ::2])
+    gradients = np.zeros(particles.shape)
+    gradients[:, 1::2] = uneven
+    gradients[:, ::2] = even
+    #pdb.set_trace()
+    return(gradients)
+
+
+def targetlogdens_warped(particles, parameters):
+    #return( -(100*(particles[:, 1::2]**2 - particles[:, ::2])**2 + (particles[:, 1::2] - 1)**2).sum(axis=1))
+    return( -((0.05*particles[:, 1::2]**2 + particles[:, ::2]-5)**2 + 0.01*(particles[:, 1::2])**2).sum(axis=1))
+
+def targetgradlogdens_warped(particles, parameters):
+    #uneven = -200*2*particles[:, 1::2]*(particles[:, 1::2]**2 - particles[:, ::2]) + 2*(particles[:, 1::2]-1)
+    uneven = -0.05*2*particles[:, 1::2]*(0.05*particles[:, 1::2]**2 + particles[:, ::2]-5) + 0.01*2*(particles[:, 1::2])
+    #even = 200*(particles[:, 1::2]**2 - particles[:, ::2])
+    even = -0.05*(particles[:, 1::2]**2 + particles[:, ::2]-5)
+    gradients = np.zeros(particles.shape)
+    gradients[:, 1::2] = uneven
+    gradients[:, ::2] = even
+    #pdb.set_trace()
+    return(gradients)
+
+
 
 #@jit(nopython=True)
 

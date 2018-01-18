@@ -13,8 +13,9 @@ import random
 randtoolbox = rpackages.importr('randtoolbox')
 
 def test_random(u):
-    if (u>1.).any() or (u<0.).any():
-        print "ERROR: outside 0 1 ! "
+    tol = 10**-16
+    if (u+tol>1.).any() or (u-tol<0.).any():
+        print("ERROR: outside 0 1 ! ")
         return True
     else: 
         return False
