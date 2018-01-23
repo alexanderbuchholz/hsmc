@@ -58,15 +58,17 @@ class sequence_distributions(object):
         return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles, self.parameters)*(1.-temperature)
 
 
-def test_continue_sampling(particles, temperature, temperedist):
+def test_continue_sampling(particles, temperature, temperedist, quantile_test):
     gradients = temperedist.gradlogdensity(particles, temperature)
     grad_cov = np.cov(gradients.transpose())
     inv_grad_cov = np.linalg.inv(grad_cov)
     N_particles, df = gradients.shape
     test_statistic = gradients.mean(axis=0).dot(inv_grad_cov).dot(gradients.mean(axis=0))*N_particles
-    quantile = chi2.ppf(0.95, df=df)
-    test_decision = test_statistic<quantile
-    return(test_decision)
+    quantile = chi2.ppf(quantile_test, df=df)
+    # if the test statistic is greater than the quantile, we break
+    test_decision = test_statistic > quantile
+    results_test_dict = {'test_decision' : test_decision, 'test_statistic' : test_statistic, 'quantile' : quantile}
+    return(results_test_dict)
 
 def logincrementalweights(particles, temperedist, temperature):
     """

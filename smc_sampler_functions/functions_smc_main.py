@@ -40,7 +40,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     # prepare for the results
     Z_list = []; mean_list = []; var_list = []
     ESS_list = []; acceptance_rate_list = []
-    temp_list = []; perf_list = []
+    temp_list = []; perf_list = []; test_dict_list = []
     #TODO: add the temperatutures
 
     
@@ -87,9 +87,14 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             print("now sampling")
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
         for move in range(move_steps):
-            particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-            temp_list.append(temp_curr)
-            test_continue_sampling(particles, temp_curr, temperedist)
+            test_dict = test_continue_sampling(particles, temp_curr, temperedist, parameters['quantile_test'])
+            test_dict['temp'] = temp_curr
+            test_dict_list.append(test_dict)
+            if not test_dict['test_decision']:
+                break
+            else: 
+                particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
+                temp_list.append(temp_curr)
 
             #import ipdb; ipdb.set_trace()
             #np.random.shuffle(proposalkerneldict_temp['epsilon'])
@@ -141,12 +146,19 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         temp_curr = np.copy(temp_next)
 
     # resample and remove in the end
+    particles, perfkerneldict = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
+    temp_list.append(temp_curr)
     for move in range(move_steps):
-        particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-        temp_list.append(temp_curr)
-        if not test_continue_sampling(particles, temp_curr, temperedist):
+        test_dict = test_continue_sampling(particles, temp_curr, temperedist, parameters['quantile_test'])
+        test_dict['temp'] = temp_curr
+        test_dict_list.append(test_dict)
+        if not test_dict['test_decision']:
             break
-        import ipdb; ipdb.set_trace()
+        else: 
+            particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
+            
+            #temp_list.append(temp_curr)
+        #import ipdb; ipdb.set_trace()
         #np.random.shuffle(proposalkerneldict_temp['epsilon'])
         #np.random.shuffle(proposalkerneldict_temp['L_steps'])
     #pdb.set_trace()
@@ -168,7 +180,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         'run_time' : run_time,
         'perf_list' : perf_list,
         'target_name' : temperedist.target_name,
-        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean()
+        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean(),
+        'test_dict_list' : test_dict_list
         }
     #import ipdb; ipdb.set_trace()
     return res_dict

@@ -8,20 +8,19 @@ def plot_results_single_simulation(results_list):
     """
     plot the results of a single run
     """
-
     plt.figure(figsize=(20,10))
 
     # plot acceptance rate kernel
     plt.subplot(331)
     for results_sampler in results_list:
-        plt.plot(results_sampler['temp_list'], results_sampler['acceptance_rate_list'], label=results_sampler['proposal_kernel']['proposalname'])
+        plt.plot(np.unique(results_sampler['temp_list']), results_sampler['acceptance_rate_list'], label=results_sampler['proposal_kernel']['proposalname'])
     plt.title("acceptance rate mcmc")
     plt.legend()
 
     # plot ESS
     plt.subplot(332)
     for results_sampler in results_list:
-        plt.plot(results_sampler['temp_list'], results_sampler['ESS_list'], label=results_sampler['proposal_kernel']['proposalname'])
+        plt.plot(np.unique(results_sampler['temp_list']), results_sampler['ESS_list'], label=results_sampler['proposal_kernel']['proposalname'])
     plt.ylim(ymax = 1.1, ymin = 0.)
     plt.title("ESS")
     plt.legend()
@@ -39,7 +38,7 @@ def plot_results_single_simulation(results_list):
     plt.subplot(334)
     plt.title("normalization constant")
     for results_sampler in results_list:
-        plt.plot(results_sampler['temp_list'], np.cumsum(results_sampler['Z_list']), label=results_sampler['proposal_kernel']['proposalname'])
+        plt.plot(np.unique(results_sampler['temp_list']), np.cumsum(results_sampler['Z_list']), label=results_sampler['proposal_kernel']['proposalname'])
     plt.axhline(0) # normalization constant is zero
     plt.legend()
 
@@ -60,7 +59,7 @@ def plot_results_single_simulation(results_list):
     plt.title("temp vs epsilon")
     for results_sampler in results_list:
         epsilons = np.array([iteration['epsilon'] for iteration in results_sampler['perf_list']])
-        temp = np.array(results_sampler['temp_list'])
+        temp = np.unique(results_sampler['temp_list'])
         epsilons = epsilons.mean(axis=1).flatten()
         plt.plot(temp, epsilons, label=results_sampler['proposal_kernel']['proposalname'])
     plt.legend()
@@ -69,7 +68,7 @@ def plot_results_single_simulation(results_list):
     plt.title("temp vs esjd")
     for results_sampler in results_list:
         ESJD = np.array([iteration['squarejumpdist_realized'] for iteration in results_sampler['perf_list']]).mean(axis=1)
-        temp = np.array(results_sampler['temp_list'])
+        temp = np.unique(results_sampler['temp_list'])
         plt.plot(temp, ESJD, label=results_sampler['proposal_kernel']['proposalname'])
     plt.legend()
     #import ipdb; ipdb.set_trace() 
@@ -83,9 +82,10 @@ def plot_repeated_simulations(results_dict):
     """
     plot the results of the repeated simulations
     """
+    #import ipdb; ipdb.set_trace()
     norm_constant_list = results_dict['norm_const'] 
-    mean_array = results_dict['mean_array']
-    var_array = results_dict['var_array'] 
+    mean_array = results_dict['mean_array'].mean(axis=2)
+    var_array = results_dict['var_array'].sum(axis=2).sum(axis=2)
     names_samplers = results_dict['names_samplers']
 
     fig = plt.figure()

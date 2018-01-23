@@ -109,12 +109,14 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     
     squarejumpdist = np.linalg.norm(particles-particles_proposed, axis=1)**2
     jumping_distance_realized = np.linalg.norm(particles-particles_next, axis=1)**2
+    #normalized_jumping_distance = np.linalg.norm((particles-particles_next).dot(l_matrix_inv), axis=1)**2
     performance_kernel_dict = {'energy': mh_ratio, 
                                 'squarejumpdist':squarejumpdist,
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accept_reject_selector.mean(),
                                 'epsilon':epsilon, 
-                                'L':1}
+                                'L':1 }
+                                #'normalized_jumping_distance' : normalized_jumping_distance}
     if parametersmcmc['verbose']:
         print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accept_reject_selector.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(1)))
     return particles_next, performance_kernel_dict

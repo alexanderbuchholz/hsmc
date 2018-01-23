@@ -9,7 +9,7 @@ sys.path.append("/home/alex/python_programming/help_functions")
 sys.path.append("/home/alex/Dropbox/smc_hmc/python_smchmc")
 
 import numpy as np
-from smc_sampler_functions.functions_smc_help import logincrementalweights_is, reweight_is, ESS_target_dichotomic_search_is, tune_mcmc_parameters, ESS
+from smc_sampler_functions.functions_smc_help import logincrementalweights_is, reweight_is, ESS_target_dichotomic_search_is, tune_mcmc_parameters, ESS, test_continue_sampling
 from functools import partial
 
 import sys
@@ -56,7 +56,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
     # prepare for the results
     Z_list = []; mean_list = []; var_list = []
     ESS_list = []; acceptance_rate_list = []
-    temp_list = []; perf_list = []
+    temp_list = []; perf_list = []; test_dict_list = []
 
     print('Starting sqmc is sampler')
     time_start = time.time()
@@ -198,24 +198,30 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
 
 
             # propagate
-            particles, perfkerneldict = proposalkernel_sample(particles_resampled, u_randomness_ordered[:, 1:], proposalkerneldict_temp, temperedist, temp_next)
-            weights = reweight_is(particles, particles_resampled, temperedist, [temp_next, temp_next], weights_normalized, perfkerneldict)
-            max_weights = np.max(weights)
-            Z_hat = max_weights+np.log(np.exp(weights-max_weights).sum())
-            weights_normalized = np.exp(weights -(max_weights +np.log(np.exp(weights-max_weights).sum())))
+            #test_dict = test_continue_sampling(particles, temp_curr, temperedist, parameters['quantile_test'])
+            #test_dict['temp'] = temp_curr
+            #test_dict_list.append(test_dict)
+            if False:#not test_dict['test_decision']:
+                break
+            else: 
+                particles, perfkerneldict = proposalkernel_sample(particles_resampled, u_randomness_ordered[:, 1:], proposalkerneldict_temp, temperedist, temp_next)
+                weights = reweight_is(particles, particles_resampled, temperedist, [temp_next, temp_next], weights_normalized, perfkerneldict)
+                max_weights = np.max(weights)
+                Z_hat = max_weights+np.log(np.exp(weights-max_weights).sum())
+                weights_normalized = np.exp(weights -(max_weights +np.log(np.exp(weights-max_weights).sum())))
 
-            # store results
-            Z_list.append(np.copy(Z_hat))
-            ESS_list.append(ESS(weights_normalized))
-            acceptance_rate_list.append(perfkerneldict['acceptance_rate'])
-            means_weighted = np.average(particles, weights=weights_normalized, axis=0)
-            variances_weighted = np.cov(particles, rowvar=False, aweights=weights_normalized)
-            mean_list.append(means_weighted)
-            var_list.append(variances_weighted)
-            temp_list.append(temp_next)
-            # delete some attributes from the perfkerneldict, 
-            del perfkerneldict['energy']; del perfkerneldict['squarejumpdist']
-            perf_list.append(perfkerneldict)
+                # store results
+                Z_list.append(np.copy(Z_hat))
+                ESS_list.append(ESS(weights_normalized))
+                acceptance_rate_list.append(perfkerneldict['acceptance_rate'])
+                means_weighted = np.average(particles, weights=weights_normalized, axis=0)
+                variances_weighted = np.cov(particles, rowvar=False, aweights=weights_normalized)
+                mean_list.append(means_weighted)
+                var_list.append(variances_weighted)
+                temp_list.append(temp_next)
+                # delete some attributes from the perfkerneldict, 
+                del perfkerneldict['energy']; del perfkerneldict['squarejumpdist']
+                perf_list.append(perfkerneldict)
             
             
             
@@ -243,7 +249,8 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
         'run_time' : run_time,
         'perf_list' : perf_list,
         'target_name' : temperedist.target_name,
-        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean()
+        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean(),
+        'test_dict_list' : test_dict_list
         }
     #import ipdb; ipdb.set_trace()
     return res_dict
