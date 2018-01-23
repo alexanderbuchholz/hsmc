@@ -16,17 +16,18 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
+#dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
+dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
     dim = 10
 N_particles = 2**10
 T_time = 20
-move_steps_hmc = 10
-move_steps_rw_mala = 40
+move_steps_hmc = 20
+move_steps_rw_mala = 100
 ESStarget = 0.9
-M_num_repetions = 10
+M_num_repetions = 40
 epsilon = 1.
 epsilon_hmc = .1
 verbose = False
@@ -47,7 +48,8 @@ parameters = {'dim' : dim,
               'T_time' : T_time,
               'autotempering' : True,
               'ESStarget': ESStarget,
-              'adaptive_covariance' : True
+              'adaptive_covariance' : True,
+              'quantile_test': 0.9
              }
 
 
@@ -151,7 +153,7 @@ if __name__ == '__main__':
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
     #samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
-    samplers_list_dict = [maladict, hmcdict1, hmcdict2, rwdict]
+    samplers_list_dict = [maladict, hmcdict1, hmcdict2]
     samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
@@ -165,15 +167,15 @@ if __name__ == '__main__':
 
     #parameters_logistic = f_dict_logistic_regression(dim)
     #parameters.update(parameters_logistic)
-    #parameters_log_cox = f_dict_log_cox(int(dim**0.5))
-    #parameters.update(parameters_log_cox)
-    from smc_sampler_functions.target_distributions import targetlogdens_ring, targetgradlogdens_ring
+    parameters_log_cox = f_dict_log_cox(int(dim**0.5))
+    parameters.update(parameters_log_cox)
+    #from smc_sampler_functions.target_distributions import targetlogdens_ring, targetgradlogdens_ring
 
-    #priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
-    #targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
-    priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
-    targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
-    targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+    priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
+    targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
+    #priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+    #targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
+    #targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
     #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
 
@@ -191,9 +193,9 @@ if __name__ == '__main__':
         res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
         #import ipdb; ipdb.set_trace()
         #res_repeated_sampling_is, res_first_iteration_is = repeat_sampling_is(samplers_list_dict_is, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
-        from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
-        plot_repeated_simulations(res_repeated_sampling)
-        plot_results_single_simulation(res_first_iteration)
+        #from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
+        #plot_repeated_simulations(res_repeated_sampling)
+        #plot_results_single_simulation(res_first_iteration)
         #import ipdb; ipdb.set_trace()
 
 
