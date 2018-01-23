@@ -26,7 +26,7 @@ T_time = 20
 move_steps_hmc = 10
 move_steps_rw_mala = 40
 ESStarget = 0.9
-M_num_repetions = 40
+M_num_repetions = 10
 epsilon = 1.
 epsilon_hmc = .1
 verbose = False
@@ -177,7 +177,8 @@ if __name__ == '__main__':
     #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
 
-    target_dist_list = [targetdistribution1, targetdistribution2]
+    #target_dist_list = [targetdistribution1, targetdistribution2]
+    target_dist_list = [targetdistribution1]
     #target_dist_list = [targetdistribution2, targetdistribution3
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
@@ -188,10 +189,11 @@ if __name__ == '__main__':
         #yappi.get_func_stats().print_all()
         #import ipdb; ipdb.set_trace()
         res_repeated_sampling, res_first_iteration = repeat_sampling(samplers_list_dict, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
-        res_repeated_sampling_is, res_first_iteration_is = repeat_sampling_is(samplers_list_dict_is, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
-        #from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
-        #plot_repeated_simulations(res_repeated_sampling)
-        #plot_results_single_simulation(res_first_iteration)
+        #import ipdb; ipdb.set_trace()
+        #res_repeated_sampling_is, res_first_iteration_is = repeat_sampling_is(samplers_list_dict_is, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
+        from smc_sampler_functions.functions_smc_plotting import plot_repeated_simulations, plot_results_single_simulation
+        plot_repeated_simulations(res_repeated_sampling)
+        plot_results_single_simulation(res_first_iteration)
         #import ipdb; ipdb.set_trace()
 
 
