@@ -143,9 +143,13 @@ def targetlogdens_logistic_help(particles, X, y):
     #import ipdb; ipdb.set_trace()
     particles = np.atleast_2d(particles)
     dot_product = np.dot(X, particles.transpose())
+    #dot_product_min = np.min(dot_product)
+    #dot_prod_less_min = dot_product-dot_product_min
     #sigmoid_value = logplus_one(dot_product)
     #sigmoid_value1 = logexp(dot_product)
+
     sigmoid_value1 = ne.evaluate('log(1+exp(-dot_product))')
+    #sigmoid_value1 = ne.evaluate('log(1+exp(-dot_prod_less_min))')
     # likelihood_value = (-y*sigmoid_value1 - (1-y)*(dot_product+sigmoid_value1)).sum(axis=0)
     likelihood_value = ((y-1)*dot_product-sigmoid_value1).sum(axis=0)
     #import ipdb; ipdb.set_trace()
@@ -206,12 +210,13 @@ def f_dict_logistic_regression(dim):
     if dim == 31:
         from sklearn.datasets import load_breast_cancer
         data = load_breast_cancer()
-        X_all = data.data
-        N_obs = X_all.shape[0]
-        X_all = (X_all-X_all.mean(axis=0))/X_all.var(axis=0)
-        X_all = np.hstack((np.ones((N_obs,1)), X_all))
+        X_data = data.data
+        N_obs = X_data.shape[0]
+        X_std = (X_data-X_data.mean(axis=0))/(X_data.var(axis=0)**0.5)
+        X_all = np.hstack((np.ones((N_obs,1)), X_std))
         y_all = data.target
         y_all = y_all[:, np.newaxis]
+        #import ipdb; ipdb.set_trace()
     else: 
         np.random.seed(1)
         N = 100
