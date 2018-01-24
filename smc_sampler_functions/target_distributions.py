@@ -64,6 +64,37 @@ def targetgradlogdens_normal(particles, parameters):
     return -meaned_particles.dot(inv_cov)
 
 
+def targetlogdens_normal_mix(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    parameters dict 'targetmean' 'targetvariance'
+    multivariate normal
+    """
+    mean1 = parameters['targetmean']
+    mean2 = mean1*-1.
+    return np.log(0.5*multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])+0.5*multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance']))
+    #return multivariate_normal.logpdf(particles, mean=parameters['targetmean'], cov=parameters['targetvariance'])
+
+def targetgradlogdens_normal_mix(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    parameters dict 'targetmean' 'targetvariance'
+    """
+    mean1 = parameters['targetmean']
+    mean2 = mean1*-1.
+
+    meaned_particles1 = particles - mean1
+    meaned_particles2 = particles - mean2
+    inv_cov = parameters['targetvariance_inv']
+    #import pdb; pdb.set_trace()
+    pdf1 = multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])[:,np.newaxis]
+    pdf2 = multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance'])[:,np.newaxis]
+    numerator = -meaned_particles1.dot(inv_cov)*pdf1 - meaned_particles2.dot(inv_cov)*pdf2
+    denominator = pdf1+pdf2
+    return numerator/denominator
+
+
+
 def targetlogdens_ring(particles, parameters):
     """
     particles [N_partiles, dim]
