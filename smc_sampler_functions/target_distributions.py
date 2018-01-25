@@ -69,7 +69,7 @@ def priorlogdens_mix(particles, parameters):
     multivariate normal
     """
     shift = parameters['mean_shift']
-    return(multivariate_normal.logpdf(particles-shift, cov=np.eye(particles.shape[1])))
+    return(multivariate_normal.logpdf(particles-shift, cov=5.*np.eye(particles.shape[1])))
 
 def priorsampler_mix(parameters, u_randomness):
     """
@@ -80,7 +80,7 @@ def priorsampler_mix(parameters, u_randomness):
     #dim = parameters['dim']
     #res = np.random.normal(size=(N_particles, dim))
     shift = parameters['mean_shift']
-    res = gaussian_vectorized(u_randomness)+shift
+    res = gaussian_vectorized(u_randomness)*(5.**0.5)+shift
     return(res)
 
 
@@ -89,7 +89,7 @@ def priorgradlogdens_mix(particles, parameters):
     particles [N_partiles, dim]
     """
     shift = parameters['mean_shift']
-    return -(particles-shift)
+    return -(particles-shift)/5.
 
 def targetlogdens_normal_mix(particles, parameters):
     """
@@ -315,6 +315,36 @@ def approx_gradient(function, x, h=0.00001):
     return(grad_vector)
 
 
+
+def targetgradlogdens_probit(particles, parameters):
+    """
+    the gradient of the logdensity of a probit model
+    """
+    particles = np.atleast_2d(particles)
+    y = parameters['y_all']
+    X = parameters['X_all']
+    factor_yx = (y*X)[:,:,np.newaxis]
+    factordensity = norm.pdf(X.dot(particles.transpose()))[:,np.newaxis,:]
+    factorProb = np.clip(norm.cdf(X.dot(particles.transpose()))[:,np.newaxis,:], 4e-16, 1-4e-16)
+    numerator =  factor_yx*factordensity - X[:,:,np.newaxis]*factordensity*factorProb
+    denominator = (1-factorProb)*factorProb
+    gradient_pi_0 = -particles
+    return (numerator/denominator).sum(axis=0).transpose()+gradient_pi_0
+
+
+def targetlogdens_probit(particles, parameters):
+    """
+    the gradient of the logdensity of a probit model
+    """
+    particles = np.atleast_2d(particles)
+    y = parameters['y_all']
+    X = parameters['X_all']
+
+    factorProb = norm.cdf(X.dot(particles.transpose()))
+    part1 = y*np.log(np.clip(factorProb, 4e-16, 1-4e-16))
+    part2 = (1-y)*np.log(1-np.clip(factorProb, 4e-16, 1-4e-16))
+    res = (part1+part2).sum(axis=0)-0.5*np.linalg.norm(particles, axis=1)**2
+    return res
 
 if __name__ == '__main__':
         from sklearn.datasets import load_breast_cancer

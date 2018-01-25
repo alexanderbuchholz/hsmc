@@ -181,6 +181,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         'perf_list' : perf_list,
         'target_name' : temperedist.target_name,
         'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean(),
+        'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list])[-1,:,:].mean(),
         'test_dict_list' : test_dict_list
         }
     #import ipdb; ipdb.set_trace()
@@ -203,6 +204,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
     runtime_list = np.zeros((len_list, M_num_repetions))
     L_mean_array = np.zeros((len_list, M_num_repetions))
+    epsilon_mean_array = np.zeros((len_list, M_num_repetions))
     root_folder = os.getcwd()
     if save_res:
         now = datetime.datetime.now().isoformat()
@@ -221,6 +223,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             mean_array[k, m_repetition,:] = res_dict['mean_list'][-1]
             ESJD_array[k, m_repetition] = res_dict['perf_list'][-1]['squarejumpdist_realized'].mean()
             L_mean_array[k, m_repetition] = res_dict['L_mean']
+            epsilon_mean_array[k, m_repetition] = res_dict['epsilon_mean']
             temp_steps_array[k, m_repetition] = len(res_dict['temp_list'])
             #import ipdb; ipdb.set_trace()
             var_array[k, m_repetition,:,:] = res_dict['var_list'][-1]
@@ -239,7 +242,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
                 'runtime_list' : runtime_list, 
                 'ESJD_list': ESJD_array, 
                 'temp_steps' : temp_steps_array, 
-                'L_mean' : L_mean_array
+                'L_mean' : L_mean_array, 
+                'epsilon_mean' : epsilon_mean_array
                 }
     if save_res:
         pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))

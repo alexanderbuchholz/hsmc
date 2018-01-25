@@ -246,11 +246,11 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
         energy_quant_reg = energy[:,-1]
     epsilon = perfkerneldict['epsilon'].flatten()
     #import ipdb; ipdb.set_trace()
-    if np.isnan(energy_quant_reg).any():
+    if np.isnan(energy_quant_reg).any() or np.isinf(energy_quant_reg).any():
         #import ipdb; ipdb.set_trace()
-        selector = np.isnan(energy_quant_reg)
-        energy_quant_reg = energy_quant_reg[~selector]
-        epsilon = epsilon[~selector]
+        selector = np.isfinite(energy_quant_reg)
+        energy_quant_reg = energy_quant_reg[selector]
+        epsilon = epsilon[selector]
         print('discard nan in energy')
     try:
         max_selector = abs(energy_quant_reg)<abs(np.log(proposalkerneldict['target_probability']))
@@ -278,7 +278,8 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     #epsilon_min = (target/res_upper.params)**0.5
     epsilon_max = np.max([epsilon_max_quant, epsilon_max_simple])
     if np.isinf(epsilon_next):
-        import ipdb; ipdb.set_trace()
+        epsilon_next = np.mean(epsilon)
+        #import ipdb; ipdb.set_trace()
 
     if False:
         #import ipdb; ipdb.set_trace()
