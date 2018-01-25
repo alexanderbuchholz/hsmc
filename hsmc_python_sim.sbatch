@@ -2,11 +2,11 @@
 #
 # state_space_sim.sbatch
 #
-#SBATCH -p serial_requeue # Partition
-#SBATCH -n 8              # one CPU
+#SBATCH -p shared # Partition serial_requeue
+#SBATCH -n 64              # one CPU
 #SBATCH -N 1              # on one node
 #SBATCH -t 7-0:00         # Running time of 2 hours
-#SBATCH --mem 4000        # Memory request
+#SBATCH --mem 8000        # Memory request
 #SBATCH -o hostname_%j.out # File to which STDOUT will be written
 #SBATCH -e hostname_%j.err # File to which STDERR will be written
 #SBATCH --array=1-9

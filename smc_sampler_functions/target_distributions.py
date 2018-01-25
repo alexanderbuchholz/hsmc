@@ -63,6 +63,33 @@ def targetgradlogdens_normal(particles, parameters):
     inv_cov = parameters['targetvariance_inv']
     return -meaned_particles.dot(inv_cov)
 
+def priorlogdens_mix(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    multivariate normal
+    """
+    shift = parameters['mean_shift']
+    return(multivariate_normal.logpdf(particles-shift, cov=np.eye(particles.shape[1])))
+
+def priorsampler_mix(parameters, u_randomness):
+    """
+    particles [N_partiles, dim]
+    multivariate normal
+    """
+    #N_particles = parameters['N_particles']
+    #dim = parameters['dim']
+    #res = np.random.normal(size=(N_particles, dim))
+    shift = parameters['mean_shift']
+    res = gaussian_vectorized(u_randomness)+shift
+    return(res)
+
+
+def priorgradlogdens_mix(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    """
+    shift = parameters['mean_shift']
+    return -(particles-shift)
 
 def targetlogdens_normal_mix(particles, parameters):
     """
@@ -87,8 +114,8 @@ def targetgradlogdens_normal_mix(particles, parameters):
     meaned_particles2 = particles - mean2
     inv_cov = parameters['targetvariance_inv']
     #import pdb; pdb.set_trace()
-    pdf1 = multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])[:,np.newaxis]
-    pdf2 = multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance'])[:,np.newaxis]
+    pdf1 = np.atleast_2d(multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])).transpose()
+    pdf2 = np.atleast_2d(multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance'])).transpose()
     numerator = -meaned_particles1.dot(inv_cov)*pdf1 - meaned_particles2.dot(inv_cov)*pdf2
     denominator = pdf1+pdf2
     return numerator/denominator

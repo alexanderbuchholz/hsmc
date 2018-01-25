@@ -106,7 +106,7 @@ def ESS_target_dichotomic_search(temperaturenext, temperatureprevious, ESStarget
     #import ipdb; ipdb.set_trace()
     return ESS_res-ESStarget
 
-def logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict):
+def logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict, selector_energy=-1):
     """
     returns the log incremental weights
     """
@@ -114,19 +114,19 @@ def logincrementalweights_is(particles, particles_previous, temperedist, tempera
     assert temperaturecurrent >= temperatureprevious
     #import ipdb; ipdb.set_trace()
     denominator = -perfkerneldict['energy_kinetic'][:,0]+temperedist.logdensity(particles_previous, temperatureprevious)
-    numerator = -perfkerneldict['energy_kinetic'][:,-1]+temperedist.logdensity(particles, temperaturecurrent)
+    numerator = -perfkerneldict['energy_kinetic'][:,selector_energy]+temperedist.logdensity(particles, temperaturecurrent)
     # previous version for MCMC type kernel
     #numerator =  temperedist.logdensity(particles, temperature=temperaturecurrent)
     #denominator = temperedist.logdensity(particles, temperature=temperatureprevious)
     #import ipdb; ipdb.set_trace()
     return numerator - denominator
 
-def reweight_is(particles, particles_previous, temperedist, temperature, weights_normalized, perfkerneldict):
+def reweight_is(particles, particles_previous, temperedist, temperature, weights_normalized, perfkerneldict, selector_energy=-1):
     """
     log incremental weights based on the temperature
     """
     #import ipdb; ipdb.set_trace()
-    incweights = logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict)+np.log(weights_normalized)
+    incweights = logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict, selector_energy)+np.log(weights_normalized)
     return incweights
 
 

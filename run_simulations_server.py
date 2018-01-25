@@ -17,6 +17,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 # define the parameters
 #dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
+#dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
 dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
@@ -35,12 +36,14 @@ verbose = False
 targetmean = np.ones(dim)*2.
 #targetvariance = np.eye(dim)*0.1
 #targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
-targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+#targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
 targetvariance_inv = np.linalg.inv(targetvariance)
 l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
 parameters = {'dim' : dim, 
               'N_particles' : N_particles, 
               'targetmean': targetmean, 
+              'mean_shift' : np.ones(dim)*0.1,
               'targetvariance':targetvariance,
               'targetvariance_inv':targetvariance_inv,
               'l_targetvariance_inv':l_targetvariance_inv,
@@ -152,8 +155,8 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
-    #samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
-    samplers_list_dict = [maladict, hmcdict1, hmcdict2]
+    samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
+    #samplers_list_dict = [maladict, hmcdict1, hmcdict2]
     samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
@@ -161,7 +164,9 @@ if __name__ == '__main__':
     from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
     from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
     from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
+    from smc_sampler_functions.target_distributions import targetlogdens_normal_mix, targetgradlogdens_normal_mix
 
+    from smc_sampler_functions.target_distributions import priorlogdens_mix, priorgradlogdens_mix, priorsampler_mix
     from smc_sampler_functions.target_distributions_logcox import priorlogdens_log_cox, priorgradlogdens_log_cox, priorsampler_log_cox
     from smc_sampler_functions.target_distributions_logcox import f_dict_log_cox, targetlogdens_log_cox, targetgradlogdens_log_cox
 
@@ -173,11 +178,14 @@ if __name__ == '__main__':
 
     priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
     targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
+
     #priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+    #priordistribution = {'logdensity' : priorlogdens_mix, 'gradlogdensity' : priorgradlogdens_mix, 'priorsampler': priorsampler_mix}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
     #targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
     #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
+    #targetdistribution1 = {'logdensity' : targetlogdens_normal_mix, 'gradlogdensity' : targetgradlogdens_normal_mix, 'target_name': 'normal_mix'}
 
     #target_dist_list = [targetdistribution1, targetdistribution2]
     target_dist_list = [targetdistribution1]
