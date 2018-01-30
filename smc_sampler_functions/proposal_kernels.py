@@ -133,6 +133,7 @@ def leapfr_mom(x, cur_p, epsilon, gradf, temperature, half=False):
     assert cur_p.shape == x.shape
     rval = cur_p + factor*epsilon*gradf(x, temperature)
     if (~np.isfinite(rval)).any():
+        #import ipdb; ipdb.set_trace()
         warnings.warn('some divergent behaviour')
     return rval
 
@@ -191,6 +192,7 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
         epsilon = parametersmcmc['epsilon_sampled']
     else:
         epsilon = parametersmcmc['epsilon']
+    #import pdb; pdb.set_trace()
     if epsilon.shape[0] == 1:
         epsilon = np.ones((N_particles,1))*epsilon
 
@@ -545,7 +547,8 @@ def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, tempera
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
-                                'L':L_steps}
+                                'L':L_steps,
+                                'trajectory_particles' : [x, p]}
     #import ipdb; ipdb.set_trace()
     if parametersmcmc['verbose']:
         print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
