@@ -115,7 +115,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             test_dict = test_continue_sampling(particles, temp_curr, temperedist, parameters['quantile_test'])
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
-            if False:#not test_dict['test_decision']:
+            if not test_dict['test_decision']:
                 break
             else: 
                 particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)

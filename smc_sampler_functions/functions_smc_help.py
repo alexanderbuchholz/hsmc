@@ -244,18 +244,21 @@ def sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldic
         squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
         N_particles, L_total = energy.shape[0], 1
         energy_quant_reg = energy
+        L_steps = np.ones(N_particles)
     # case of hmc
     else: 
         energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
         squarejumpdist = perfkerneldict['squarejumpdist'][:,-1]
         N_particles, L_total = energy.shape
         energy_quant_reg = energy[:,-1]
+        L_steps = perfkerneldict['L']
     
     selector_trajectory = np.ones(N_particles, dtype=bool)
     
     energy = energy[selector_trajectory,:]
     epsilon = perfkerneldict['epsilon'][selector_trajectory,:]
-    L_steps = perfkerneldict['L'][selector_trajectory]
+    #import ipdb; ipdb.set_trace()
+    L_steps = L_steps[selector_trajectory]
     squarejumpdist = squarejumpdist[selector_trajectory]
 
     energy_weights = np.clip(np.exp(energy), 0., 1.)
