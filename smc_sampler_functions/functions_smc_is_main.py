@@ -70,7 +70,7 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
     particles_initial = temperedist.priorsampler(parameters, u_randomness[:, :dim])
     #particles_initial = gaussian_vectorized(u_randomness[:, :dim])
     particles, perfkerneldict = proposalkernel_sample(particles_initial, u_randomness[:, dim:], proposalkerneldict_temp, temperedist, 0)
-
+    #import ipdb; ipdb.set_trace()
     weights_normalized = np.ones(N_particles)/N_particles
     weights = reweight_is(particles, particles_initial, temperedist, [0, 0], weights_normalized, perfkerneldict)
 
@@ -134,6 +134,35 @@ def smc_sampler_is_qmc(temperedist, parameters, proposalkerneldict, verbose=Fals
             print("now sampling")
 
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, u_randomness_ordered[:, 1:], proposalkerneldict_temp, temperedist, temp_curr)
+
+        if False:
+            
+            L_max = perfkerneldict['L']
+            temp_steps = 20
+            temp_range = np.linspace(temp_curr, min(temp_curr+0.2,1.), temp_steps)
+            array_results_ESS = np.zeros((L_max, temp_steps))
+            for l in range(L_max):
+                for t in range(temp_steps):
+                    particles_inter = perfkerneldict['trajectory_particles'][0][:,:,l+1]
+                    weights = reweight_is(particles_inter, particles_resampled, temperedist, [temp_curr, temp_range[t]], weights_normalized, perfkerneldict, selector_energy=l+1)
+                    max_weights = np.max(weights)
+                    weights_normalized_inter = np.exp(weights -(max_weights +np.log(np.exp(weights-max_weights).sum())))
+                    array_results_ESS[l,t] = ESS(weights_normalized_inter)
+            
+            from matplotlib import pyplot as plt
+            #plt.plot(array_results_ESS)
+            #plt.show()
+            
+            from mpl_toolkits.mplot3d import Axes3D
+            from matplotlib import cm
+            from matplotlib.ticker import LinearLocator, FormatStrFormatter
+            #ipdb.set_trace()
+            X, Y = np.meshgrid(temp_range, range(L_max))
+            fig = plt.figure()
+            ax = fig.gca(projection='3d')
+            surf = ax.plot_surface(X, Y, array_results_ESS, cmap=cm.coolwarm, linewidth=0, antialiased=False)
+            plt.show()
+            import ipdb; ipdb.set_trace()
 
         if not parameters['autotempering']:
             counter_while += 1

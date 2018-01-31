@@ -59,6 +59,7 @@ class sequence_distributions(object):
 
 
 def test_continue_sampling(particles, temperature, temperedist, quantile_test):
+    #import ipdb; ipdb.set_trace()
     gradients = temperedist.gradlogdensity(particles, temperature)
     grad_cov = np.cov(gradients.transpose())
     inv_grad_cov = np.linalg.inv(grad_cov)
@@ -230,6 +231,61 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptanc
 
     return epsilon_next, L_next
 
+
+
+def sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldict):
+    """
+    function that samples weighted epsilon and L 
+    """
+    
+    # case of mala and rw
+    if len(perfkerneldict['energy'].shape)==1:
+        energy = perfkerneldict['energy'][:,np.newaxis]
+        squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
+        N_particles, L_total = energy.shape[0], 1
+        energy_quant_reg = energy
+    # case of hmc
+    else: 
+        energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
+        squarejumpdist = perfkerneldict['squarejumpdist'][:,-1]
+        N_particles, L_total = energy.shape
+        energy_quant_reg = energy[:,-1]
+    
+    selector_trajectory = np.ones(N_particles, dtype=bool)
+    
+    energy = energy[selector_trajectory,:]
+    epsilon = perfkerneldict['epsilon'][selector_trajectory,:]
+    L_steps = perfkerneldict['L'][selector_trajectory]
+    squarejumpdist = squarejumpdist[selector_trajectory]
+
+    energy_weights = np.clip(np.exp(energy), 0., 1.)
+    # flatten arrays
+    squarejumpdist_flat = squarejumpdist.flatten()
+    L_steps_flat = L_steps.flatten()
+    weights_flat = energy_weights.flatten()
+    weighted_squarejumpdist_flat = squarejumpdist_flat*weights_flat/(L_steps_flat)
+    epsilon_flat = epsilon.flatten()
+    
+    # filter out the terms that degenerated
+    if np.isnan(weighted_squarejumpdist_flat).any():
+        nan_selector = np.isnan(weighted_squarejumpdist_flat)
+        weighted_squarejumpdist_flat[nan_selector] = 0
+    # choose based on sampling
+    weights_esjd = weighted_squarejumpdist_flat/np.nansum(weighted_squarejumpdist_flat)
+    if np.isnan(weights_esjd).any():
+        nan_selector = np.isnan(weighted_squarejumpdist_flat)
+        weighted_squarejumpdist_flat[nan_selector] = 0
+        #import ipdb; ipdb.set_trace()
+    #import ipdb; ipdb.set_trace()
+    #weights_esjd = weighted_squarejumpdist_flat/weighted_squarejumpdist_flat.sum()
+    res = np.random.choice(range(weights_esjd.shape[0]), size=N_particles, p=weights_esjd)
+    L_next = L_steps_flat[res]
+    #L_next = np.int(np.ceil(L_next.mean()))
+    epsilon_next = epsilon_flat[res][:, np.newaxis]
+    
+    return epsilon_next, L_next
+
+
 def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     """
     function that does the quantile regression 
@@ -313,6 +369,21 @@ def tune_mcmc_parameters(perfkerneldict, proposalkerneldict, high_acceptance=Fal
 
     res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
     return res_dict
+
+def tune_mcmc_parameters_fearnhead_taylor(perfkerneldict, proposalkerneldict, high_acceptance=False):
+    """
+    function that tunes the parameters
+    input: dictionnary with the performance of the kernels
+    output:
+    """
+    
+    epsilon_next, L_next = sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldict)
+    epsilon_max = 0.
+
+    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
+    return res_dict
+
+
 
 
 def hilbert_sampling(particles, weights_normalized, u_randomness):

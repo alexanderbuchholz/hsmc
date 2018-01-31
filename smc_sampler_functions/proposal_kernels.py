@@ -397,6 +397,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     p_finished = np.zeros((N_particles, dim))
     x_start = x[:, :, 1]
     p_start = p[:, :, 1]
+
     indicator_just_finished = np.zeros(len(L_steps), dtype=bool)
     indicator_active = np.ones(len(L_steps), dtype=bool)
     #import ipdb; ipdb.set_trace()
@@ -412,8 +413,8 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     p[:, :, -1] = p_finished
     #import ipdb; ipdb.set_trace()
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
-    ESJD[:, -1] = np.linalg.norm(x[:, :, -1] - x[:, :, 0])**2
-    
+    #ESJD[:, -1] = np.linalg.norm(x[:, :, -1] - x[:, :, 0], axis=1)**2
+    ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*(x[:, :, -1] - x[:, :, 0])).sum(axis=1)
 
     # accept reject routine
     energy_total = energy_kinetic + energy_potential
