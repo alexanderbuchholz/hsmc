@@ -199,7 +199,7 @@ if __name__ == '__main__':
     #targetdistribution1 = {'logdensity' : targetlogdens_normal_mix, 'gradlogdensity' : targetgradlogdens_normal_mix, 'target_name': 'normal_mix'}
 
     #target_dist_list = [targetdistribution1, targetdistribution2]
-    target_dist_list = [targetdistribution1, targetdistribution2]
+    target_dist_list = [targetdistribution2, targetdistribution1]
     #target_dist_list = [targetdistribution2, targetdistribution3
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
