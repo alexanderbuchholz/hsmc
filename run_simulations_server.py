@@ -17,12 +17,12 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 # define the parameters
 #dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
-#dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
-dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
+dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
+#dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 10
+    dim = 64
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 20
@@ -43,7 +43,7 @@ l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
 parameters = {'dim' : dim, 
               'N_particles' : N_particles, 
               'targetmean': targetmean, 
-              'mean_shift' : np.ones(dim)*0.1,
+              'mean_shift' : np.ones(dim)*1,
               'targetvariance':targetvariance,
               'targetvariance_inv':targetvariance_inv,
               'l_targetvariance_inv':l_targetvariance_inv,
@@ -73,7 +73,7 @@ maladict = {'proposalkernel_tune': proposalmala,
                       'L_steps' : 1,
                       'epsilon' : np.array([epsilon]),
                       'epsilon_max' : np.array([epsilon]),
-                      'tune_kernel': True,
+                      'tune_kernel': 'fearnhead_taylor',
                       'sample_eps_L' : True,
                       'verbose' : verbose,
                       'move_steps': move_steps_rw_mala
@@ -86,13 +86,13 @@ rwdict = {'proposalkernel_tune': proposalrw,
                       'L_steps' : 1,
                       'epsilon' : np.array([epsilon]),
                       'epsilon_max' : np.array([epsilon]),
-                      'tune_kernel': True,
+                      'tune_kernel': 'fearnhead_taylor',
                       'sample_eps_L' : True,
                       'verbose' : verbose,
                       'move_steps': move_steps_rw_mala
                       }
 
-hmcdict1 = {'proposalkernel_tune': proposalhmc,
+hmcdict1 = {'proposalkernel_tune': proposalhmc_parallel,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC_L_random',
                       'target_probability' : 0.9,
@@ -101,7 +101,7 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
-                      'tune_kernel': True,
+                      'tune_kernel': 'fearnhead_taylor',
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
@@ -109,7 +109,7 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'mean_L' : False
                       }
 
-hmcdict2 = {'proposalkernel_tune': proposalhmc,
+hmcdict2 = {'proposalkernel_tune': proposalhmc_parallel,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC',
                       'target_probability' : 0.9,
@@ -118,7 +118,7 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
-                      'tune_kernel': True,
+                      'tune_kernel': 'fearnhead_taylor',
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
-    samplers_list_dict = [hmcdict1, hmcdict2, rwdict, maladict]
-    #samplers_list_dict = [maladict, hmcdict1, hmcdict2]
+    #samplers_list_dict = [rwdict, hmcdict1, hmcdict2, maladict]
+    samplers_list_dict = [hmcdict1, hmcdict2, maladict]
     samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
@@ -182,7 +182,7 @@ if __name__ == '__main__':
     #priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
     #priordistribution = {'logdensity' : priorlogdens_mix, 'gradlogdensity' : priorgradlogdens_mix, 'priorsampler': priorsampler_mix}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
-    #targetdistribution2 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+    #targetdistribution1 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
     #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal_mix, 'gradlogdensity' : targetgradlogdens_normal_mix, 'target_name': 'normal_mix'}

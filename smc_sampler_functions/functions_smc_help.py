@@ -58,16 +58,28 @@ class sequence_distributions(object):
         return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles, self.parameters)*(1.-temperature)
 
 
-def test_continue_sampling(particles, temperature, temperedist, quantile_test):
-    #import ipdb; ipdb.set_trace()
-    gradients = temperedist.gradlogdensity(particles, temperature)
-    grad_cov = np.cov(gradients.transpose())
-    inv_grad_cov = np.linalg.inv(grad_cov)
-    N_particles, df = gradients.shape
-    test_statistic = gradients.mean(axis=0).dot(inv_grad_cov).dot(gradients.mean(axis=0))*N_particles
-    quantile = chi2.ppf(quantile_test, df=df)
-    # if the test statistic is greater than the quantile, we break
-    test_decision = test_statistic > quantile
+def test_continue_sampling(particles, summary_particles_list, temperature, temperedist, quantile_test):
+    """
+    test on whether continue sampling or not
+    """
+    if particles.shape[1] > 50:
+        quantile_test = 0.5
+        test_statistic = np.corrcoef(summary_particles_list[0], summary_particles_list[-1])[1,0]
+        if test_statistic>quantile_test:
+            test_decision = True
+        else: 
+            test_decision = False
+        quantile = quantile_test
+        #import ipdb; ipdb.set_trace()
+    else:
+        gradients = temperedist.gradlogdensity(particles, temperature)
+        grad_cov = np.cov(gradients.transpose())
+        inv_grad_cov = np.linalg.inv(grad_cov)
+        N_particles, df = gradients.shape
+        test_statistic = gradients.mean(axis=0).dot(inv_grad_cov).dot(gradients.mean(axis=0))*N_particles
+        quantile = chi2.ppf(quantile_test, df=df)
+        # if the test statistic is greater than the quantile, we break
+        test_decision = test_statistic > quantile
     results_test_dict = {'test_decision' : test_decision, 'test_statistic' : test_statistic, 'quantile' : quantile}
     return(results_test_dict)
 

@@ -6,7 +6,9 @@ from numba import jit
 from matplotlib import pyplot as plt
 import sys
 sys.path.append("../help/")
-from help.gaussian_densities_etc import gaussian_vectorized
+#import ipdb; ipdb.set_trace()
+from gaussian_densities_etc import gaussian_vectorized
+import pandas as pd
 
 # parameters of the model
 def f_dict_log_cox(N):
@@ -27,14 +29,29 @@ def f_dict_log_cox(N):
     parameters['covar'] = covar_reshaped
     parameters['inv_covar'] = inv_covar
     parameters['l_covar'] = np.linalg.cholesky(covar_reshaped)
-    X_true = np.random.normal(size=(dim)).dot(parameters['l_covar'])+mu_mean.flatten()
-    delta = (1./dim)*np.exp(X_true)
-    Y = np.random.poisson(delta)[:,np.newaxis]
+    df = pd.read_csv('df_pines.csv')
+    Y = make_grid(df, N)[:,np.newaxis]
+    #X_true = np.random.normal(size=(dim)).dot(parameters['l_covar'])+mu_mean.flatten()
+    #delta = (1./dim)*np.exp(X_true)
+    #Y = np.random.poisson(delta)[:,np.newaxis]
     parameters['Y'] = Y
-    parameters['X_true'] = X_true
+    #parameters['X_true'] = X_true
     return parameters
 
 #parameters = f_dict_log_cox(30)
+def make_grid(data, N):
+    grid = np.linspace(start=0, stop=1, num=N+1)
+    dim = N**2
+    data_counts = np.zeros(dim) 
+    data_x = data['data_x']
+    data_y = data['data_y']
+    for i in range(N): 
+        for j in range(N):
+            logical_y = (data_x > grid[i]) & (data_x < grid[i + 1])
+            logical_x = (data_y > grid[j]) & (data_y < grid[j + 1])
+            data_counts[(i - 1) * N + j] = sum(logical_y & logical_x)
+    return data_counts
+
 
 from numba import jit # use jit, so that loops are fast
 
@@ -139,3 +156,7 @@ def priorgradlogdens_log_cox(X, parameters):
     meaned_x = ne.evaluate('X-mu_mean')
     res = -inv_covar.dot(meaned_x)
     return(res.transpose())
+
+if __name__ == '__main__':
+    N = 10
+    res = f_dict_log_cox(N)
