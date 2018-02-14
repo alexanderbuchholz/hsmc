@@ -17,12 +17,13 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 # define the parameters
 #dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
-dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
+#dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
+dim_list = [31]
 #dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 64
+    dim = 31
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 20
@@ -94,7 +95,7 @@ rwdict = {'proposalkernel_tune': proposalrw,
 
 hmcdict1 = {'proposalkernel_tune': proposalhmc_parallel,
                       'proposalkernel_sample': proposalhmc_parallel,
-                      'proposalname' : 'HMC_L_random',
+                      'proposalname' : 'HMC_L_random_ft',
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
                       'L_steps' : 100,
@@ -109,9 +110,13 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc_parallel,
                       'mean_L' : False
                       }
 
+hmcdict3 = copy.copy(hmcdict1)
+hmcdict3['proposalname'] = 'HMC_L_random'
+hmcdict3['tune_kernel'] = True
+
 hmcdict2 = {'proposalkernel_tune': proposalhmc_parallel,
                       'proposalkernel_sample': proposalhmc_parallel,
-                      'proposalname' : 'HMC',
+                      'proposalname' : 'HMC_ft',
                       'target_probability' : 0.9,
                       'covariance_matrix' : np.eye(dim), 
                       'L_steps' : 100,
@@ -125,6 +130,10 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc_parallel,
                       'move_steps': move_steps_hmc,
                       'mean_L' : True
                       }
+
+hmcdict4 = copy.copy(hmcdict2)
+hmcdict4['proposalname'] = 'HMC'
+hmcdict4['tune_kernel'] = True
 
 
 hmcdict_is_mc = {'proposalkernel_tune': proposalhmc_is,
@@ -155,8 +164,8 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
-    #samplers_list_dict = [rwdict, hmcdict1, hmcdict2, maladict]
-    samplers_list_dict = [hmcdict1, hmcdict2, maladict]
+    samplers_list_dict = [rwdict, hmcdict1, hmcdict2, maladict, hmcdict3, hmcdict4]
+    #samplers_list_dict = [hmcdict1, hmcdict2, maladict]
     samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
@@ -164,31 +173,33 @@ if __name__ == '__main__':
     from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
     from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
     from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
+    from smc_sampler_functions.target_distributions import targetlogdens_probit, targetgradlogdens_probit, f_dict_logistic_regression
     from smc_sampler_functions.target_distributions import targetlogdens_normal_mix, targetgradlogdens_normal_mix
 
     from smc_sampler_functions.target_distributions import priorlogdens_mix, priorgradlogdens_mix, priorsampler_mix
     from smc_sampler_functions.target_distributions_logcox import priorlogdens_log_cox, priorgradlogdens_log_cox, priorsampler_log_cox
     from smc_sampler_functions.target_distributions_logcox import f_dict_log_cox, targetlogdens_log_cox, targetgradlogdens_log_cox
 
-    #parameters_logistic = f_dict_logistic_regression(dim)
-    #parameters.update(parameters_logistic)
-    parameters_log_cox = f_dict_log_cox(int(dim**0.5))
-    parameters.update(parameters_log_cox)
+    parameters_logistic = f_dict_logistic_regression(dim)
+    parameters.update(parameters_logistic)
+    #parameters_log_cox = f_dict_log_cox(int(dim**0.5))
+    #parameters.update(parameters_log_cox)
     #from smc_sampler_functions.target_distributions import targetlogdens_ring, targetgradlogdens_ring
 
-    priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
-    targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
+    #priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
+    #targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
 
-    #priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+    priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
     #priordistribution = {'logdensity' : priorlogdens_mix, 'gradlogdensity' : priorgradlogdens_mix, 'priorsampler': priorsampler_mix}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
     #targetdistribution1 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
-    #targetdistribution3 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
+    targetdistribution1 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
+    targetdistribution2 = {'logdensity' : targetlogdens_probit, 'gradlogdensity' : targetgradlogdens_probit, 'target_name': 'probit'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal_mix, 'gradlogdensity' : targetgradlogdens_normal_mix, 'target_name': 'normal_mix'}
 
     #target_dist_list = [targetdistribution1, targetdistribution2]
-    target_dist_list = [targetdistribution1]
+    target_dist_list = [targetdistribution1, targetdistribution2]
     #target_dist_list = [targetdistribution2, targetdistribution3
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)

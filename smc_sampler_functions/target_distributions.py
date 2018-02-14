@@ -323,11 +323,11 @@ def targetgradlogdens_probit(particles, parameters):
     particles = np.atleast_2d(particles)
     y = parameters['y_all']
     X = parameters['X_all']
-    factor_yx = (y*X)[:,:,np.newaxis]
+    factor_yx = ne.evaluate('y*X')[:,:,np.newaxis]
     factordensity = norm.pdf(X.dot(particles.transpose()))[:,np.newaxis,:]
     factorProb = np.clip(norm.cdf(X.dot(particles.transpose()))[:,np.newaxis,:], 4e-16, 1-4e-16)
-    numerator =  factor_yx*factordensity - X[:,:,np.newaxis]*factordensity*factorProb
-    denominator = (1-factorProb)*factorProb
+    numerator =  ne.evaluate('factor_yx*factordensity') - X[:,:,np.newaxis]*ne.evaluate('factordensity*factorProb')
+    denominator = ne.evaluate('(1-factorProb)*factorProb')
     gradient_pi_0 = -particles
     return (numerator/denominator).sum(axis=0).transpose()+gradient_pi_0
 
