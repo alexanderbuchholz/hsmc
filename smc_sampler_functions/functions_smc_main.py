@@ -261,22 +261,22 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             particles_array[:,:,k, m_repetition] = res_dict['particles_resampled']
             if save_res_intermediate:
                 pickle.dump(res_dict, open('%ssampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
-    all_dict = {'parameters': parameters, 
-                'norm_const' : norm_constant_list, 
-                'mean_array' : mean_array, 
-                'var_array' :  var_array, 
-                'names_samplers' : names_samplers,
-                'M_num_repetions' : M_num_repetions,
-                'target_name' : temperedist.target_name, 
-                'particles_array' : particles_array, 
-                'runtime_list' : runtime_list, 
-                'ESJD_list': ESJD_array, 
-                'temp_steps' : temp_steps_array, 
-                'L_mean' : L_mean_array, 
-                'epsilon_mean' : epsilon_mean_array
-                }
-    if save_res:
-        pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
+            all_dict = {'parameters': parameters, 
+                        'norm_const' : norm_constant_list, 
+                        'mean_array' : mean_array, 
+                        'var_array' :  var_array, 
+                        'names_samplers' : names_samplers,
+                        'M_num_repetions' : M_num_repetions,
+                        'target_name' : temperedist.target_name, 
+                        'particles_array' : particles_array, 
+                        'runtime_list' : runtime_list, 
+                        'ESJD_list': ESJD_array, 
+                        'temp_steps' : temp_steps_array, 
+                        'L_mean' : L_mean_array, 
+                        'epsilon_mean' : epsilon_mean_array
+                        }
+            if save_res:
+                pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
     os.chdir(root_folder)
     #root_folder = os.getcwd()
     #import ipdb; ipdb.set_trace()
