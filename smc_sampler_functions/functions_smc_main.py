@@ -134,7 +134,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         elif parameters['autotempering']:
             ESStarget = parameters['ESStarget']
             partial_ess_target = partial(ESS_target_dichotomic_search, temperatureprevious=temp_curr, ESStarget=ESStarget, particles=particles, temperedist=temperedist, weights_normalized=weights_normalized)
-            temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=100)
+            temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=15)
             print('temperature %s' %(temp_next), end='\r')
             assert temp_next <= 1.
             if temp_next > 1.:
