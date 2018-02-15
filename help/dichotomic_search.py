@@ -5,7 +5,7 @@ Created on Mon Nov 21 21:09:15 2016
 @author: alex
 """
 import numpy as np	
-def f_dichotomic_search(intervall, function, N_max_steps=10000, tolerance=0.000001):
+def f_dichotomic_search(intervall, function, N_max_steps=10000, tolerance=0.01):
     """
         function that does a dichotomic for the root of a function
     """
