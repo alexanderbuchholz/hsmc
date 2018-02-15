@@ -23,7 +23,7 @@ dim_list = [900, 4086]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 31
+    dim = 30
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 20
@@ -93,7 +93,7 @@ rwdict = {'proposalkernel_tune': proposalrw,
                       'move_steps': move_steps_rw_mala
                       }
 
-hmcdict1 = {'proposalkernel_tune': proposalhmc_parallel,
+hmcdict1 = {'proposalkernel_tune': proposalhmc,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC_L_random_ft',
                       'target_probability' : 0.9,
@@ -112,9 +112,10 @@ hmcdict1 = {'proposalkernel_tune': proposalhmc_parallel,
 
 hmcdict3 = copy.copy(hmcdict1)
 hmcdict3['proposalname'] = 'HMC_L_random'
+hmcdict3['proposalkernel_tune'] = proposalhmc
 hmcdict3['tune_kernel'] = True
 
-hmcdict2 = {'proposalkernel_tune': proposalhmc_parallel,
+hmcdict2 = {'proposalkernel_tune': proposalhmc,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC_ft',
                       'target_probability' : 0.9,
@@ -133,6 +134,7 @@ hmcdict2 = {'proposalkernel_tune': proposalhmc_parallel,
 
 hmcdict4 = copy.copy(hmcdict2)
 hmcdict4['proposalname'] = 'HMC'
+hmcdict4['proposalkernel_tune'] = proposalhmc
 hmcdict4['tune_kernel'] = True
 
 
@@ -164,9 +166,9 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     from smc_sampler_functions.functions_smc_is_main import repeat_sampling_is
-    samplers_list_dict = [rwdict, hmcdict1, hmcdict2, maladict, hmcdict3, hmcdict4]
+    samplers_list_dict = [hmcdict4, hmcdict3, rwdict, hmcdict1, hmcdict2, maladict]
     #samplers_list_dict = [hmcdict1, hmcdict2, maladict]
-    samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
+    #samplers_list_dict_is = [hmcdict_is_mc, hmcdict_is_qmc]
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
@@ -180,10 +182,10 @@ if __name__ == '__main__':
     from smc_sampler_functions.target_distributions_logcox import priorlogdens_log_cox, priorgradlogdens_log_cox, priorsampler_log_cox
     from smc_sampler_functions.target_distributions_logcox import f_dict_log_cox, targetlogdens_log_cox, targetgradlogdens_log_cox
 
-    parameters_logistic = f_dict_logistic_regression(dim)
-    parameters.update(parameters_logistic)
-    #parameters_log_cox = f_dict_log_cox(int(dim**0.5))
-    #parameters.update(parameters_log_cox)
+    #parameters_logistic = f_dict_logistic_regression(dim)
+    #parameters.update(parameters_logistic)
+    parameters_log_cox = f_dict_log_cox(int(dim**0.5))
+    parameters.update(parameters_log_cox)
     #from smc_sampler_functions.target_distributions import targetlogdens_ring, targetgradlogdens_ring
 
     priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
