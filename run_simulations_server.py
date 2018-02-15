@@ -18,7 +18,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 # define the parameters
 #dim_list = [2, 5, 10, 20, 31, 50, 100, 200, 300]
 #dim_list = [2, 5, 10, 20, 30, 50, 100, 200, 300]
-dim_list = [31]
+dim_list = [900, 4086]
 #dim_list = [5**2, 10**2, 15**2, 20**2, 30**2, 40**2, 50**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
@@ -186,23 +186,23 @@ if __name__ == '__main__':
     #parameters.update(parameters_log_cox)
     #from smc_sampler_functions.target_distributions import targetlogdens_ring, targetgradlogdens_ring
 
-    #priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
-    #targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
+    priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
+    targetdistribution1 = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
 
-    priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+    #priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
     #priordistribution = {'logdensity' : priorlogdens_mix, 'gradlogdensity' : priorgradlogdens_mix, 'priorsampler': priorsampler_mix}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
     #targetdistribution1 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
-    targetdistribution1 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
-    targetdistribution2 = {'logdensity' : targetlogdens_probit, 'gradlogdensity' : targetgradlogdens_probit, 'target_name': 'probit'}
+    #targetdistribution1 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
+    #targetdistribution2 = {'logdensity' : targetlogdens_probit, 'gradlogdensity' : targetgradlogdens_probit, 'target_name': 'probit'}
     #targetdistribution4 = {'logdensity' : targetlogdens_ring, 'gradlogdensity' : targetgradlogdens_ring, 'target_name': 'ring'}
     #targetdistribution1 = {'logdensity' : targetlogdens_normal_mix, 'gradlogdensity' : targetgradlogdens_normal_mix, 'target_name': 'normal_mix'}
 
     #target_dist_list = [targetdistribution1, targetdistribution2]
-    target_dist_list = [targetdistribution2, targetdistribution1]
+    target_dist_list = [targetdistribution1]
     #target_dist_list = [targetdistribution2, targetdistribution3
     for target_dist in target_dist_list: 
-        #temperedist = sequence_distributions(parameters, priordistribution, target_dist)
+        temperedist = sequence_distributions(parameters, priordistribution, target_dist)
         #import yappi
         #yappi.start()
         # sample and compare the results
