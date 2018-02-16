@@ -48,6 +48,14 @@ class sequence_distributions(object):
         assert temperature>=0.
         #import ipdb; ipdb.set_trace()
         return (self.targetlogdens(particles, self.parameters)*temperature)+self.priorlogdens(particles, self.parameters)*(1.-temperature)
+
+    def precalc_logdensity(self, particles):
+        """
+        function to precalc the logdensity
+        """
+        target = self.targetlogdens(particles, self.parameters)
+        prior = self.priorlogdens(particles, self.parameters)
+        return {'target' : target, 'prior' : prior}
     
     def gradlogdensity(self, particles, temperature):
         """
@@ -113,11 +121,29 @@ def ESS(weights_normalized):
 
 
 def ESS_target_dichotomic_search(temperaturenext, temperatureprevious, ESStarget, particles, temperedist, weights_normalized):
+    """
+    ESS target that is based to the dichotomic search algortihm
+    """
     weights = reweight(particles, temperedist, [temperatureprevious, temperaturenext], weights_normalized)
     weights_normalized_new = np.exp(weights)/np.exp(weights).sum()
     ESS_res = ESS(weights_normalized_new)
     #import ipdb; ipdb.set_trace()
     return ESS_res-ESStarget
+
+def ESS_target_dichotomic_search_simplified(temperaturenext, temperatureprevious, ESStarget, precalc_dict):
+    """
+    ESS target that is based to the dichotomic search algortihm, simplified version that is based on the precalculated 
+    dictionary of the log density
+    """
+    precalc_logtarget = precalc_dict['target']
+    precalc_logprior = precalc_dict['prior']
+    weights = temperaturenext*precalc_logtarget+(1-temperaturenext)*precalc_logprior-temperatureprevious*precalc_logtarget-(1-temperatureprevious)*precalc_logprior
+    #weights = reweight(particles, temperedist, [temperatureprevious, temperaturenext], weights_normalized)
+    weights_normalized_new = np.exp(weights)/np.exp(weights).sum()
+    ESS_res = ESS(weights_normalized_new)
+    #import ipdb; ipdb.set_trace()
+    return ESS_res-ESStarget
+
 
 def logincrementalweights_is(particles, particles_previous, temperedist, temperature, perfkerneldict, selector_energy=-1):
     """

@@ -1,7 +1,7 @@
 # smc sampler
 from __future__ import print_function
 import numpy as np
-from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, tune_mcmc_parameters_fearnhead_taylor
+from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, tune_mcmc_parameters_fearnhead_taylor, ESS_target_dichotomic_search_simplified
 from functools import partial
 
 import sys
@@ -133,7 +133,13 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             temp_curr, temp_next = temperatures[counter_while-1], temperatures[counter_while]
         elif parameters['autotempering']:
             ESStarget = parameters['ESStarget']
-            partial_ess_target = partial(ESS_target_dichotomic_search, temperatureprevious=temp_curr, ESStarget=ESStarget, particles=particles, temperedist=temperedist, weights_normalized=weights_normalized)
+
+            # old verison
+            #partial_ess_target = partial(ESS_target_dichotomic_search, temperatureprevious=temp_curr, ESStarget=ESStarget, particles=particles, temperedist=temperedist, weights_normalized=weights_normalized)
+            # new version 
+            precalc_dict = temperedist.precalc_logdensity(particles)
+            partial_ess_target = partial(ESS_target_dichotomic_search_simplified, temperatureprevious=temp_curr, ESStarget=ESStarget, precalc_dict=precalc_dict)
+            #import ipdb; ipdb.set_trace()
             temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=15)
             print('temperature %s' %(temp_next), end='\r')
             assert temp_next <= 1.
