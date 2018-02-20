@@ -179,9 +179,9 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
 
     # resample and remove in the end
     summary_particles_list = []
-    summary_particles_list.append(particles.sum(axis=1))
+    summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
     particles, perfkerneldict = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-    summary_particles_list.append(particles.sum(axis=1))
+    summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
     temp_list.append(temp_curr)
 
     for move in range(move_steps):
@@ -192,7 +192,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             break
         else: 
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-            summary_particles_list.append(particles.sum(axis=1))
+            summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
             #temp_list.append(temp_curr)
         #import ipdb; ipdb.set_trace()
         #np.random.shuffle(proposalkerneldict_temp['epsilon'])
