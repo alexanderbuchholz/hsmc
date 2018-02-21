@@ -24,9 +24,9 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     #assert isinstance(temperedist, sequence_distributions)
     N_particles = parameters['N_particles']
     dim = parameters['dim']
-    T_time = parameters['T_time']
+    T_time = proposalkerneldict['T_time']
     proposalkerneldict_temp = copy.copy(proposalkerneldict)
-    if not parameters['autotempering']:
+    if not proposalkerneldict['autotempering']:
         temperatures = np.linspace(0,1,T_time)
         temperatures = np.hstack((temperatures, 1.)).flatten()
     
@@ -62,7 +62,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         particles_resampled, weights_normalized = resample(particles, weights_normalized)
         
         # propagate
-        if parameters['adaptive_covariance'] and temp_curr != 0.:
+        if proposalkerneldict['adaptive_covariance'] and temp_curr != 0.:
             proposalkerneldict_temp['covariance_matrix'] = np.diag(np.diag(var_list[-1]))
         
         # our tuning
@@ -112,7 +112,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
-            test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, parameters['quantile_test'])
+            test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
             if not test_dict['test_decision']:
@@ -128,11 +128,11 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         
 
         # choose weights adaptively
-        if not parameters['autotempering']:
+        if not proposalkerneldict['autotempering']:
             counter_while += 1
             temp_curr, temp_next = temperatures[counter_while-1], temperatures[counter_while]
-        elif parameters['autotempering']:
-            ESStarget = parameters['ESStarget']
+        elif proposalkerneldict['autotempering']:
+            ESStarget = proposalkerneldict['ESStarget']
 
             # old verison
             #partial_ess_target = partial(ESS_target_dichotomic_search, temperatureprevious=temp_curr, ESStarget=ESStarget, particles=particles, temperedist=temperedist, weights_normalized=weights_normalized)
@@ -185,7 +185,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     temp_list.append(temp_curr)
 
     for move in range(move_steps):
-        test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, parameters['quantile_test'])
+        test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
         test_dict['temp'] = temp_curr
         test_dict_list.append(test_dict)
         if not test_dict['test_decision']:
