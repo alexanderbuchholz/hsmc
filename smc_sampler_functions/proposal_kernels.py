@@ -142,7 +142,7 @@ def leapfr_pos(cur_x, p, epsilon, inv_mass):
     cur_x = np.atleast_2d(cur_x)
     p = np.atleast_2d(p)
     assert cur_x.shape == p.shape
-    rval = cur_x + epsilon*p.dot(inv_mass)
+    rval = cur_x + epsilon*np.dot(p, inv_mass)
     if (~np.isfinite(rval)).any():
         warnings.warn('some divergent behaviour')
     #assert(not(~np.isfinite(rval)).any())

@@ -74,7 +74,34 @@ def f_covariance_matrix(N, beta, sigma2):
     return(covariance_matrix)
 
 
+#@profile
 def targetlogdens_log_cox(X, parameters):
+    """
+    X is a matrix of size [dim, particles]
+    Y is a matrix of size [dim, 1]
+    """
+    X = X.transpose()
+    Y = parameters['Y']
+    assert X.shape[1]>=1
+    assert Y.shape[1]==1
+    dim = parameters['dim']
+    assert X.shape[0]==dim
+    assert Y.shape[0]==dim
+    inv_covar = parameters['inv_covar']
+    mu_mean = parameters['mu_mean']
+    assert mu_mean.shape[1]==1
+    part1 = ne.evaluate('Y*X')
+    part2 = ne.evaluate('-(1/dim)*exp(X)')
+    part3 = (part1+part2).sum(axis=0)
+    meaned_x = ne.evaluate('X-mu_mean')
+    inter_prod = np.dot(inv_covar, meaned_x)
+    part4 = ne.evaluate('-0.5*(inter_prod*meaned_x)').sum(axis=0)
+    res = part3+part4
+    #import pdb; pdb.set_trace()
+    return(res)
+
+#@profile
+def targetlogdens_log_cox_old(X, parameters):
     """
     X is a matrix of size [dim, particles]
     Y is a matrix of size [dim, 1]
@@ -139,10 +166,10 @@ def targetgradlogdens_log_cox(X, parameters):
     mu_mean = parameters['mu_mean']
     assert mu_mean.shape[1]==1
     
-    part1 = ne.evaluate('-(1/dim)*exp(X)')
+    part1 = ne.evaluate('-(1./dim)*exp(X)')
     part2 = Y+part1
     meaned_x = ne.evaluate('X-mu_mean')
-    part3 = -(inv_covar).dot(meaned_x)
+    part3 = -np.dot(inv_covar, meaned_x)
     res = part2+part3
     #import pdb; pdb.set_trace()
     return(res.transpose())
@@ -158,5 +185,12 @@ def priorgradlogdens_log_cox(X, parameters):
     return(res.transpose())
 
 if __name__ == '__main__':
-    N = 10
+    N = 20
     res = f_dict_log_cox(N)
+
+    particles = np.random.normal(size=(1000, res['dim']))
+    #targetgradlogdens_log_cox(particles, res)
+    for i in range(10):
+        targetlogdens_log_cox(particles, res)
+        targetlogdens_log_cox_old(particles, res)
+        
