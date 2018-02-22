@@ -14,6 +14,7 @@ import copy
 import pickle
 import datetime
 import os
+import pandas as pd
 
 
 def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
@@ -241,6 +242,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     runtime_list = np.zeros((len_list, M_num_repetions))
     L_mean_array = np.zeros((len_list, M_num_repetions))
     epsilon_mean_array = np.zeros((len_list, M_num_repetions))
+    ESS_dict_all = {name : [] for name in names_samplers}
+
     root_folder = os.getcwd()
     if save_res:
         now = datetime.datetime.now().isoformat()
@@ -261,6 +264,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             L_mean_array[k, m_repetition] = res_dict['L_mean']
             epsilon_mean_array[k, m_repetition] = res_dict['epsilon_mean']
             temp_steps_array[k, m_repetition] = len(res_dict['temp_list'])
+            inter_frame = pd.DataFrame({'ESS' : res_dict['ESS_list'], 'temp' : np.unique(res_dict['temp_list'])})
+            ESS_dict_all[sampler_dict['proposalname']].append(inter_frame)
             #import ipdb; ipdb.set_trace()
             var_array[k, m_repetition,:,:] = res_dict['var_list'][-1]
             runtime_list[k, m_repetition] = res_dict['run_time']
@@ -279,7 +284,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
                         'ESJD_list': ESJD_array, 
                         'temp_steps' : temp_steps_array, 
                         'L_mean' : L_mean_array, 
-                        'epsilon_mean' : epsilon_mean_array
+                        'epsilon_mean' : epsilon_mean_array,
+                        'ESS_dict_all' : ESS_dict_all
                         }
             if save_res:
                 pickle.dump(all_dict, open('%s_%s_all_dict_sampler_dim_%s.p' %(temperedist.target_name, save_name, parameters['dim']), 'wb'))
