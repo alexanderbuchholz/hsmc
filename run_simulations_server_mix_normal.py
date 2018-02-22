@@ -152,8 +152,8 @@ if __name__ == '__main__':
     samplers_list_dict_non_adaptive = []
 
     # define the target distributions
-    from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
-    from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
+    from smc_sampler_functions.target_distributions import targetlogdens_normal_mix, targetgradlogdens_normal_mix
+    from smc_sampler_functions.target_distributions import priorlogdens_mix, priorgradlogdens_mix, priorsampler_mix
 
 
     priordistribution = {'logdensity' : priorlogdens_mix, 'gradlogdensity' : priorgradlogdens_mix, 'priorsampler': priorsampler_mix}
