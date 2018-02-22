@@ -18,12 +18,12 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [400, 900, 4086]
+dim_list = [10**2, 20**2, 30**2, 64**2]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 400
+    dim = 36
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 50
