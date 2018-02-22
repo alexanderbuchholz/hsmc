@@ -362,7 +362,7 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
 
             quant_reg = QuantReg(abs(energy_quant_reg), epsilon**2)
             res_median = quant_reg.fit()
-            res_lower = quant_reg.fit(0.25)
+            res_lower = quant_reg.fit(0.5)
             #res_upper = quant_reg.fit(0.75)
             epsilon_max_quant = (target/res_lower.params)**0.5
             epsilon_next = (target/res_median.params)**0.5

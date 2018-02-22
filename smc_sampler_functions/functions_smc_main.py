@@ -237,6 +237,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     var_array = np.zeros((len_list, M_num_repetions, dim, dim))
     ESJD_array = np.zeros((len_list, M_num_repetions))
     temp_steps_array = np.zeros((len_list, M_num_repetions))
+    temp_steps_array_single = np.zeros((len_list, M_num_repetions))
     particles_array = np.zeros((N_particles, dim, len_list, M_num_repetions))
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
     runtime_list = np.zeros((len_list, M_num_repetions))
@@ -264,6 +265,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             L_mean_array[k, m_repetition] = res_dict['L_mean']
             epsilon_mean_array[k, m_repetition] = res_dict['epsilon_mean']
             temp_steps_array[k, m_repetition] = len(res_dict['temp_list'])
+            temp_steps_array_single[k, m_repetition] = len(np.unique(res_dict['temp_list'])) # single steps
             inter_frame = pd.DataFrame({'ESS' : res_dict['ESS_list'], 'temp' : np.unique(res_dict['temp_list'])})
             ESS_dict_all[sampler_dict['proposalname']].append(inter_frame)
             #import ipdb; ipdb.set_trace()
@@ -283,6 +285,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
                         'runtime_list' : runtime_list, 
                         'ESJD_list': ESJD_array, 
                         'temp_steps' : temp_steps_array, 
+                        'temp_steps_single' : temp_steps_array_single,
                         'L_mean' : L_mean_array, 
                         'epsilon_mean' : epsilon_mean_array,
                         'ESS_dict_all' : ESS_dict_all

@@ -23,11 +23,11 @@ dim_list = [10**2, 20**2, 30**2, 64**2]
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 36
+    dim = 9
 N_particles = 2**10
 T_time = 20
-move_steps_hmc = 50
-move_steps_rw_mala = 200
+move_steps_hmc = 60
+move_steps_rw_mala = 250
 ESStarget = 0.9
 M_num_repetions = 40
 epsilon = 1.
@@ -118,6 +118,11 @@ hmcdict_ft_adaptive = {'proposalkernel_tune': proposalhmc,
                       'quantile_test': 0.5
                       }
 
+hmcdict_ft_non_adaptive = copy.copy(hmcdict_ft_adaptive)
+hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
+hmcdict_ft_non_adaptive['quantile_test'] = 0.0001
+
+
 hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC_L_random_ours_adaptive',
@@ -139,6 +144,9 @@ hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'adaptive_covariance' : True,
                       'quantile_test': 0.5
                       }
+hmcdict_ours_non_adaptive = copy.copy(hmcdict_ours_adaptive)
+hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
+hmcdict_ours_non_adaptive['quantile_test'] = 0.0001
 
 
 
@@ -149,7 +157,7 @@ hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
 if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
-    samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]
+    samplers_list_dict_adaptive = [hmcdict_ft_adaptive]#, hmcdict_ours_adaptive, rwdict, maladict]
     samplers_list_dict_non_adaptive = []
 
     # define the target distributions
@@ -167,7 +175,11 @@ if __name__ == '__main__':
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
         res_repeated_sampling_adaptive, res_first_iteration_adaptive = repeat_sampling(samplers_list_dict_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
+        #import ipdb; ipdb.set_trace()
+        adjusted_steps = int(np.ceil(res_repeated_sampling_adaptive['temp_steps'].mean(axis=1)/res_repeated_sampling_adaptive['temp_steps_single'].mean(axis=1))[0])
+        hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
+        hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
+        samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
+        res_repeated_sampling_non_adaptive, res_first_iteration_non_adaptive = repeat_sampling(samplers_list_dict_non_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
 
         
-
-        #import ipdb; ipdb.set_trace()
