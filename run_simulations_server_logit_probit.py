@@ -1,4 +1,4 @@
-# run simulations on server for student distribution
+# run simulations on server for logit probit distribution
 
 # simulations server
 # Notebook for smc sampler 
@@ -18,12 +18,12 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [10, 20, 50, 100, 200]
+dim_list = [31]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 10
+    dim = 31
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 20
@@ -118,9 +118,6 @@ hmcdict_ft_adaptive = {'proposalkernel_tune': proposalhmc,
                       'quantile_test': 0.5
                       }
 
-hmcdict_ft_non_adaptive = copy.copy(hmcdict_ft_adaptive)
-hmcdict_ft_non_adaptive['autotempering'] = False
-
 hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'proposalkernel_sample': proposalhmc_parallel,
                       'proposalname' : 'HMC_L_random_ours_adaptive',
@@ -142,8 +139,6 @@ hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'adaptive_covariance' : True,
                       'quantile_test': 0.5
                       }
-hmcdict_ours_non_adaptive = copy.copy(hmcdict_ours_adaptive)
-hmcdict_ours_non_adaptive['autotempering'] = False
 
 
 
@@ -159,24 +154,22 @@ if __name__ == '__main__':
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
-    from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
+    from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
+    from smc_sampler_functions.target_distributions import targetlogdens_probit, targetgradlogdens_probit
 
 
     priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
-    targetdistribution1 = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+    targetdistribution1 = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : targetgradlogdens_logistic, 'target_name': 'logistic'}
+    targetdistribution2 = {'logdensity' : targetlogdens_probit, 'gradlogdensity' : targetgradlogdens_probit, 'target_name': 'logistic'}
 
-    target_dist_list = [targetdistribution1]
+    parameters_logistic = f_dict_logistic_regression(dim)
+    parameters.update(parameters_logistic)
+
+    target_dist_list = [targetdistribution1, targetdistribution1]
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
         res_repeated_sampling_adaptive, res_first_iteration_adaptive = repeat_sampling(samplers_list_dict_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
 
         
-        T_time_non_adaptive = np.ceil(res_repeated_sampling_adaptive['temp_steps'].mean(axis=1))[0]
-        hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
-        hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
-        hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
-        hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
-        samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
-        res_repeated_sampling_non_adaptive, res_first_iteration_non_adaptive = repeat_sampling(samplers_list_dict_non_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
 
         #import ipdb; ipdb.set_trace()

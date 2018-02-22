@@ -2,14 +2,14 @@
 #
 # state_space_sim.sbatch
 #
-#SBATCH -p shared # Partition serial_requeue
+#SBATCH -p serial_requeue # Partition serial_requeue
 #SBATCH -n 8              # one CPU
 #SBATCH -N 1              # on one node
-#SBATCH -t 7-0:00         # Running time of 2 hours
+#SBATCH -t 2-0:00         # Running time of 2 hours
 #SBATCH --mem 8000        # Memory request
-#SBATCH -o hostname_%j.out # File to which STDOUT will be written
-#SBATCH -e hostname_%j.err # File to which STDERR will be written
-#SBATCH --array=1-9
+#SBATCH -o student_%j.out # File to which STDOUT will be written
+#SBATCH -e student_%j.err # File to which STDERR will be written
+#SBATCH --array=1-5
 
 module load python/2.7.11-fasrc01
 source activate my_root
@@ -22,4 +22,5 @@ export R_LIBS_USER=$HOME/apps/R:$R_LIBS_USER
 #srun R CMD BATCH --no-save $input out/$input.$SLURM_ARRAY_TASK_ID.out
 #python test_batch.py $SLURM_ARRAY_TASK_ID
 
-python run_simulations_server.py $SLURM_ARRAY_TASK_ID
+python run_simulations_server_student.py $SLURM_ARRAY_TASK_ID
+
