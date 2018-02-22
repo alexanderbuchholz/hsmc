@@ -7,8 +7,8 @@
 #SBATCH -N 1              # on one node
 #SBATCH -t 2-0:00         # Running time of 2 hours
 #SBATCH --mem 8000        # Memory request
-#SBATCH -o log_cox_%j.out # File to which STDOUT will be written
-#SBATCH -e log_cox_%j.err # File to which STDERR will be written
+#SBATCH -o info_log_cox_%j.out # File to which STDOUT will be written
+#SBATCH -e info_log_cox_%j.err # File to which STDERR will be written
 #SBATCH --array=1-4
 
 module load python/2.7.11-fasrc01

@@ -7,8 +7,8 @@
 #SBATCH -N 1              # on one node
 #SBATCH -t 2-0:00         # Running time of 2 hours
 #SBATCH --mem 8000        # Memory request
-#SBATCH -o student_%j.out # File to which STDOUT will be written
-#SBATCH -e student_%j.err # File to which STDERR will be written
+#SBATCH -o info_student_%j.out # File to which STDOUT will be written
+#SBATCH -e info_student_%j.err # File to which STDERR will be written
 #SBATCH --array=1-5
 
 module load python/2.7.11-fasrc01
