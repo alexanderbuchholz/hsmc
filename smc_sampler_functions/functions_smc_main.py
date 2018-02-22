@@ -247,8 +247,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     root_folder = os.getcwd()
     if save_res:
         now = datetime.datetime.now().isoformat()
-        os.mkdir('results_simulation_%s'%(now))
-        os.chdir('results_simulation_%s'%(now))
+        os.mkdir('results_simulation_%s_%s'%(temperedist.target_name, now))
+        os.chdir('results_simulation_%s_%s'%(temperedist.target_name, now))
     # run the samplers
     res_first_iteration = []
     for m_repetition in range(M_num_repetions):
