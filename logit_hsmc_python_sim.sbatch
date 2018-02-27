@@ -22,5 +22,5 @@ export R_LIBS_USER=$HOME/apps/R:$R_LIBS_USER
 #srun R CMD BATCH --no-save $input out/$input.$SLURM_ARRAY_TASK_ID.out
 #python test_batch.py $SLURM_ARRAY_TASK_ID
 
-python run_simulations_server_logit_probit.py $SLURM_ARRAY_TASK_ID
+python run_simulations_server_logit.py $SLURM_ARRAY_TASK_ID
 

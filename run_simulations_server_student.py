@@ -177,6 +177,6 @@ if __name__ == '__main__':
         hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
         hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
         samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
-        res_repeated_sampling_non_adaptive, res_first_iteration_non_adaptive = repeat_sampling(samplers_list_dict_non_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name'])
+        res_repeated_sampling_non_adaptive, res_first_iteration_non_adaptive = repeat_sampling(samplers_list_dict_non_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_name = target_dist['target_name']+'_non_adaptive')
 
         #import ipdb; ipdb.set_trace()
