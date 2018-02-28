@@ -11,9 +11,11 @@ from scipy.special import gamma, erf
 from scipy.special import erf as serf
 import sys
 sys.path.append("../help/")
+sys.path.append("../smc_sampler_functions/")
 from help.gaussian_densities_etc import gaussian_vectorized
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
+import pandas as pd
 from numba import jit
 from functools import partial
 
@@ -369,7 +371,20 @@ def f_dict_logistic_regression(dim):
         X_all = np.hstack((np.ones((N_obs,1)), X_std))
         y_all = data.target
         y_all = y_all[:, np.newaxis]
-        #import ipdb; ipdb.set_trace()
+        
+    elif dim == 301:
+        from german_credit import data_z_2way as data
+        N_obs = data.shape[0]
+        X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
+        y_all = (data[:, -1]+1)/2
+        y_all = y_all[:, np.newaxis]
+    elif dim == 25:
+        from german_credit import data_z as data
+        N_obs = data.shape[0]
+        X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
+        y_all = (data[:, -1]+1)/2
+        y_all = y_all[:, np.newaxis]
+
     else: 
         np.random.seed(1)
         N = 100
@@ -550,86 +565,73 @@ def targetlogdens_probit(particles, parameters):
 
 
 if __name__ == '__main__':
-        from sklearn.datasets import load_breast_cancer
-        data = load_breast_cancer()
-        X_all = data.data
-        N_obs = X_all.shape[0]
+    dim = 301
+    #particles = np.random.normal(size=(1, dim))
+    #parameters = {'X_all': X_all, 'y_all': y_all}
+    #import ipdb as pdb; pdb.set_trace()
+    parameters = f_dict_logistic_regression(dim)
+    #particles = np.ones((1,parameters['X_all'].shape[1]))
+    particles = np.random.normal(size=(1, parameters['X_all'].shape[1]))
+    particles = np.random.normal(size=(1000, parameters['X_all'].shape[1]))
+    #import ipdb; ipdb.set_trace()
 
-        X_all = (X_all-X_all.mean(axis=0))/X_all.var(axis=0)
-        X_all = np.hstack((np.ones((N_obs,1)), X_all))
+    #import yappi
+    #yappi.start()
 
-        y_all = data.target
-        #selector = y_all==0
-        #y_all[selector] = -1
-        y_all = y_all[:, np.newaxis]
-        dim = X_all.shape[1]
-        N_obs = X_all.shape[0]
-        #particles = np.random.normal(size=(1, dim))
-        #parameters = {'X_all': X_all, 'y_all': y_all}
-        #import ipdb as pdb; pdb.set_trace()
-        parameters = f_dict_logistic_regression(31)
-        #particles = np.ones((1,parameters['X_all'].shape[1]))
-        particles = np.random.normal(size=(1, parameters['X_all'].shape[1]))
-        particles = np.random.normal(size=(1000, parameters['X_all'].shape[1]))
-        #import ipdb; ipdb.set_trace()
+    targetlogdens_probit(particles, parameters)
+    X = parameters['X_all']
+    y = parameters['y_all']
 
+    
+    particles = np.random.normal(size=(1000, dim))
+    # for the student test
+    targetmean = np.ones(dim)*2.
+    #targetvariance = np.eye(dim)*0.1
+    #targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
+    targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+    #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
+    targetvariance_inv = np.linalg.inv(targetvariance)
+    l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
+    parameters = {'dim' : dim, 
+                'targetmean': targetmean, 
+                'targetvariance':targetvariance,
+                'det_targetvariance' : np.linalg.det(targetvariance), 
+                'targetvariance_inv':targetvariance_inv,
+                'l_targetvariance_inv':l_targetvariance_inv,
+                'df' : 5
+                }
+
+    for m in range(100):
+        targetlogdens_student(particles, parameters)
+        targetlogdens_student_old(particles, parameters)
+        #targetgradlogdens_logistic_help_old(particles, parameters['X_all'], parameters['y_all'])
+        #targetgradlogdens_probit(particles, parameters)
+        #targetgradlogdens_probit_old(particles, parameters)
+        #core_targetlogdens_probit(particles, y, X)
+        #core_targetlogdens_probit_jit(particles, y, X)
+
+    #yappi.get_func_stats().print_all()
+
+    if False:
+        #logistic_log_likelihood_jit = jit(logistic_log_likelihood, nopython=True)
+        #logistic_log_likelihood_jit(particles, X_all, y_all)
+        targetlogdens_logistic(particles, parameters)
+        targetgradlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
         #import yappi
         #yappi.start()
-
-        targetlogdens_probit(particles, parameters)
-        X = parameters['X_all']
-        y = parameters['y_all']
-
-        dim = 100
-        particles = np.random.normal(size=(1000, dim))
-        # for the student test
-        targetmean = np.ones(dim)*2.
-        #targetvariance = np.eye(dim)*0.1
-        #targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
-        targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
-        #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
-        targetvariance_inv = np.linalg.inv(targetvariance)
-        l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
-        parameters = {'dim' : dim, 
-                    'targetmean': targetmean, 
-                    'targetvariance':targetvariance,
-                    'det_targetvariance' : np.linalg.det(targetvariance), 
-                    'targetvariance_inv':targetvariance_inv,
-                    'l_targetvariance_inv':l_targetvariance_inv,
-                    'df' : 5
-                    }
-
-        for m in range(100):
-            targetlogdens_student(particles, parameters)
-            targetlogdens_student_old(particles, parameters)
-            #targetgradlogdens_logistic_help_old(particles, parameters['X_all'], parameters['y_all'])
-            #targetgradlogdens_probit(particles, parameters)
-            #targetgradlogdens_probit_old(particles, parameters)
-            #core_targetlogdens_probit(particles, y, X)
-            #core_targetlogdens_probit_jit(particles, y, X)
-
+        targetgradlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
         #yappi.get_func_stats().print_all()
-
-        if False:
-            #logistic_log_likelihood_jit = jit(logistic_log_likelihood, nopython=True)
-            #logistic_log_likelihood_jit(particles, X_all, y_all)
-            targetlogdens_logistic(particles, parameters)
-            targetgradlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
-            #import yappi
-            #yappi.start()
-            targetgradlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
-            #yappi.get_func_stats().print_all()
-            targetgradlogdens_logistic(particles, parameters)
-            #import ipdb; ipdb.set_trace()
-            #targetgradlogdens_logistic_notjit(particles, X_all, y_all)
-            #
-            partial_target_max = partial(targetlogdens_logistic, parameters=parameters) 
-            diff = approx_gradient(partial_target_max, particles) - targetgradlogdens_logistic(particles, parameters)
+        targetgradlogdens_logistic(particles, parameters)
+        #import ipdb; ipdb.set_trace()
+        #targetgradlogdens_logistic_notjit(particles, X_all, y_all)
+        #
+        partial_target_max = partial(targetlogdens_logistic, parameters=parameters) 
+        diff = approx_gradient(partial_target_max, particles) - targetgradlogdens_logistic(particles, parameters)
+        assert np.linalg.norm(diff)<0.00001
+        diff = targetlogdens_logistic_help_safe(particles, parameters['X_all'], parameters['y_all']) - targetlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
+        assert np.linalg.norm(diff)<0.00001
+        import ipdb; ipdb.set_trace()
+        particles_test = np.random.normal(size=(100, parameters['X_all'].shape[1]))
+        for N in range(99):
+            diff = approx_gradient(partial_target_max, particles_test[N:N+1], 0.0000001) - targetgradlogdens_logistic(particles_test, parameters)[N:N+1,:]
             assert np.linalg.norm(diff)<0.00001
-            diff = targetlogdens_logistic_help_safe(particles, parameters['X_all'], parameters['y_all']) - targetlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
-            assert np.linalg.norm(diff)<0.00001
-            import ipdb; ipdb.set_trace()
-            particles_test = np.random.normal(size=(100, parameters['X_all'].shape[1]))
-            for N in range(99):
-                diff = approx_gradient(partial_target_max, particles_test[N:N+1], 0.0000001) - targetgradlogdens_logistic(particles_test, parameters)[N:N+1,:]
-                assert np.linalg.norm(diff)<0.00001
