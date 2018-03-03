@@ -426,6 +426,19 @@ def tune_mcmc_parameters_fearnhead_taylor(perfkerneldict, proposalkerneldict, hi
     return res_dict
 
 
+def tune_mcmc_parameters_simple(perfkerneldict, proposalkerneldict, high_acceptance=False):
+    """
+    function that tunes the parameters
+    input: dictionnary with the performance of the kernels
+    output:
+    """
+    
+    epsilon_next, L_next = sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldict)
+    __, epsilon_max = quantile_regression_epsilon(perfkerneldict, proposalkerneldict)
+
+    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
+    return res_dict
+
 
 
 def hilbert_sampling(particles, weights_normalized, u_randomness):

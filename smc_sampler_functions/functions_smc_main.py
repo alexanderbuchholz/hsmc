@@ -1,7 +1,7 @@
 # smc sampler
 from __future__ import print_function
 import numpy as np
-from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, tune_mcmc_parameters_fearnhead_taylor, ESS_target_dichotomic_search_simplified
+from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, tune_mcmc_parameters_fearnhead_taylor, ESS_target_dichotomic_search_simplified, tune_mcmc_parameters_simple
 from functools import partial
 
 import sys
@@ -67,7 +67,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             proposalkerneldict_temp['covariance_matrix'] = np.diag(np.diag(var_list[-1]))
         
         # our tuning
-        if proposalkerneldict_temp['tune_kernel'] == True:
+        if proposalkerneldict_temp['tune_kernel'] == "ours_extensive":
             if verbose: 
                 print("now tuning")
             # tune the parameters 
@@ -82,7 +82,28 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
             proposalkerneldict_temp['epsilon_max'] = results_tuning['epsilon_max']
             proposalkerneldict_temp['L_steps'] = results_tuning['L_next']
             #import ipdb; ipdb.set_trace()
-        
+        # our tuning, simplified
+        elif proposalkerneldict_temp['tune_kernel'] == "ours_simple":
+            if verbose: 
+                print("now tuning")
+            # tune the parameters 
+            #proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
+            if proposalkerneldict['L_steps']>1: # randomize the L steps
+                proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict['L_steps'], N_particles)
+            else: 
+                proposalkerneldict_temp['L_steps'] = 1.
+
+            proposalkerneldict_temp['epsilon_sampled'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
+            particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
+            perfkerneldict['temp'] = temp_curr
+            del proposalkerneldict_temp['epsilon_sampled'] # deleted because also available in output perfkerneldict
+            
+            results_tuning = tune_mcmc_parameters_simple(perfkerneldict, proposalkerneldict_temp)
+            proposalkerneldict_temp['epsilon'] = results_tuning['epsilon_next']
+            proposalkerneldict_temp['epsilon_max'] = results_tuning['epsilon_max']
+            proposalkerneldict_temp['L_steps'] = results_tuning['L_next']
+            #import ipdb; ipdb.set_trace()
+
         # tuning as in the fearnhead and taylor paper
         elif proposalkerneldict_temp['tune_kernel'] == 'fearnhead_taylor':
             if temp_curr == 0.:
@@ -103,7 +124,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
                 L_perturbed = results_tuning['L_next']+np.random.random_integers(low=-1,high=1, size=results_tuning['L_next'].shape)
                 L_perturbed = np.clip(L_perturbed, 1, 200)
                 proposalkerneldict_temp['L_steps'] = L_perturbed
-
+        
         if verbose: 
             print("now sampling")
         summary_particles_list = []
