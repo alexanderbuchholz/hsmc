@@ -127,7 +127,7 @@ hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
-                      'tune_kernel': True,
+                      'tune_kernel': 'ours_simple',
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
@@ -149,7 +149,6 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]
-    samplers_list_dict_non_adaptive = []
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import targetlogdens_normal_mix, targetgradlogdens_normal_mix

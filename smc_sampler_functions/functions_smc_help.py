@@ -71,7 +71,6 @@ def test_continue_sampling(particles, summary_particles_list, temperature, tempe
     test on whether continue sampling or not
     """
     if particles.shape[1] > 0: # replaced, former 
-        quantile_test = 0.5
         test_statistic = np.corrcoef(summary_particles_list[0], summary_particles_list[-1])[1,0]
         if test_statistic>quantile_test:
             test_decision = True

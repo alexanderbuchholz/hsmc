@@ -29,7 +29,7 @@ T_time = 20
 move_steps_hmc = 20
 move_steps_rw_mala = 100
 ESStarget = 0.9
-M_num_repetions = 1
+M_num_repetions = 40
 epsilon = 1.
 epsilon_hmc = .1
 verbose = False
@@ -136,8 +136,7 @@ hmcdict_ours_adaptive_simple = {'proposalkernel_tune': proposalhmc,
 if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
-    samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]
-    samplers_list_dict_non_adaptive = []
+    samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, rwdict, maladict]
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler

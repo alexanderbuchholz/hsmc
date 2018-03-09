@@ -18,18 +18,21 @@ def f_dict_log_cox(N):
     np.random.seed(1)
     beta = 1./33.
     sigma2 = 1.91
-    mu = np.log(126)-sigma2/2
+    mu = np.log(126)-sigma2/2.
     # dim/ gridsize
     dim = N**2
     mu_mean = np.ones((dim,1))*mu
     parameters = {'beta' : beta, 'sigma2' : sigma2, 'mu' : mu, 'dim': dim, 'mu_mean' : mu_mean, 'N' :N}
-    covariance_matrix = f_covariance_matrix(N, beta, sigma2)
+    covariance_matrix = f_covariance_matrix(N, beta, sigma2, dim)
     covar_reshaped = covariance_matrix.reshape(dim, dim)
     inv_covar = np.linalg.inv(covar_reshaped)
+    parameters['lognormconst_prior'] = -0.5*np.log(np.linalg.det(covar_reshaped))-0.5*dim*np.log(2*np.pi)
+    #import ipdb; ipdb.set_trace()
     parameters['covar'] = covar_reshaped
     parameters['inv_covar'] = inv_covar
     parameters['l_covar'] = np.linalg.cholesky(covar_reshaped)
     df = pd.read_csv('df_pines.csv')
+
     Y = make_grid(df, N)[:,np.newaxis]
     #X_true = np.random.normal(size=(dim)).dot(parameters['l_covar'])+mu_mean.flatten()
     #delta = (1./dim)*np.exp(X_true)
@@ -49,28 +52,28 @@ def make_grid(data, N):
         for j in range(N):
             logical_y = (data_x > grid[i]) & (data_x < grid[i + 1])
             logical_x = (data_y > grid[j]) & (data_y < grid[j + 1])
-            data_counts[(i - 1) * N + j] = sum(logical_y & logical_x)
+            data_counts[(i) * N + j] = sum(logical_y & logical_x)
     return data_counts
 
 
 from numba import jit # use jit, so that loops are fast
 
 @jit(nopython=True)
-def covariance_function(i, j, i_prime, j_prime, beta, sigma2):
+def covariance_function(i, j, i_prime, j_prime, beta, sigma2, dim):
     exponent1 = (i-i_prime)**2+(j-j_prime)**2
     exponent2 = -exponent1**0.5
-    res = sigma2*np.exp(exponent2/(64*beta))
+    res = sigma2*np.exp(exponent2/((dim**0.5)*beta))
     return(res)
 
 
 @jit(nopython=True)
-def f_covariance_matrix(N, beta, sigma2):
+def f_covariance_matrix(N, beta, sigma2, dim):
     covariance_matrix = np.zeros((N, N, N, N))
     for i in range(N):
         for i_prime in range(N):
             for j in range(N):
                 for j_prime in range(N):
-                    covariance_matrix[i, j, i_prime, j_prime] = covariance_function(i, j, i_prime, j_prime, beta, sigma2)
+                    covariance_matrix[i, j, i_prime, j_prime] = covariance_function(i, j, i_prime, j_prime, beta, sigma2, dim)
     return(covariance_matrix)
 
 
@@ -91,13 +94,13 @@ def targetlogdens_log_cox(X, parameters):
     mu_mean = parameters['mu_mean']
     assert mu_mean.shape[1]==1
     part1 = ne.evaluate('Y*X')
-    part2 = ne.evaluate('-(1/dim)*exp(X)')
+    part2 = ne.evaluate('-(1./dim)*exp(X)')
     part3 = (part1+part2).sum(axis=0)
     meaned_x = ne.evaluate('X-mu_mean')
     inter_prod = np.dot(inv_covar, meaned_x)
     part4 = ne.evaluate('-0.5*(inter_prod*meaned_x)').sum(axis=0)
     res = part3+part4
-    #import pdb; pdb.set_trace()
+    #import ipdb; ipdb.set_trace()
     return(res)
 
 #@profile
@@ -132,7 +135,7 @@ def priorlogdens_log_cox(X, parameters):
     inv_covar = parameters['inv_covar']
     mu_mean = parameters['mu_mean']
     meaned_x = ne.evaluate('X-mu_mean')
-    res = -0.5*(inv_covar.dot(meaned_x)*meaned_x).sum(axis=0)
+    res = -0.5*(inv_covar.dot(meaned_x)*meaned_x).sum(axis=0)+parameters['lognormconst_prior']
     return(res)
 
 def priorsampler_log_cox(parameters, u_randomness):
@@ -165,12 +168,13 @@ def targetgradlogdens_log_cox(X, parameters):
     inv_covar = parameters['inv_covar']
     mu_mean = parameters['mu_mean']
     assert mu_mean.shape[1]==1
-    
-    part1 = ne.evaluate('-(1./dim)*exp(X)')
-    part2 = Y+part1
+    assert mu_mean.shape[0]==dim
+
+    part1 = ne.evaluate('(1./dim)*exp(X)')
+    part2 = Y-part1
     meaned_x = ne.evaluate('X-mu_mean')
-    part3 = -np.dot(inv_covar, meaned_x)
-    res = part2+part3
+    part3 = np.dot(inv_covar, meaned_x)
+    res = part2-part3
     #import pdb; pdb.set_trace()
     return(res.transpose())
 

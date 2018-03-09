@@ -18,12 +18,13 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [31, 100]
-
+dim_list = [25, 31, 301]
+# corresponds to german credit wo interactions, 
+# breast cancer and german credit w interactions
 try:
     dim = dim_list[int(sys.argv[1])-1]
 except:
-    dim = 31
+    dim = 25
 N_particles = 2**10
 T_time = 20
 move_steps_hmc = 20
@@ -33,21 +34,8 @@ M_num_repetions = 40
 epsilon = 1.
 epsilon_hmc = .1
 verbose = False
-targetmean = np.ones(dim)*2.
-targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
-#targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
-targetvariance_inv = np.linalg.inv(targetvariance)
-l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
 parameters = {'dim' : dim, 
-              'N_particles' : N_particles, 
-              'targetmean': targetmean, 
-              'mean_shift' : np.ones(dim)*1,
-              'targetvariance':targetvariance,
-              'det_targetvariance' : np.linalg.det(targetvariance),
-              'targetvariance_inv':targetvariance_inv,
-              'l_targetvariance_inv':l_targetvariance_inv,
-              'df' : 5
-             }
+              'N_particles' : N_particles}
 
 
 
@@ -127,7 +115,7 @@ hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
                       'epsilon' : np.array([epsilon_hmc]),
                       'epsilon_max' : np.array([epsilon_hmc]),
                       'accept_reject' : True,
-                      'tune_kernel': True,
+                      'tune_kernel': 'ours_simple',
                       'sample_eps_L' : True,
                       'parallelize' : False,
                       'verbose' : verbose,
@@ -150,7 +138,6 @@ if __name__ == '__main__':
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]
-    samplers_list_dict_non_adaptive = []
 
     # define the target distributions
     from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
