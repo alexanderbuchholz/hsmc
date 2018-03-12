@@ -58,16 +58,20 @@ def plot_results_single_simulation(results_list):
     plt.subplot(337)
     plt.title("temp vs epsilon")
     for results_sampler in results_list:
-        epsilons = np.array([iteration['epsilon'] for iteration in results_sampler['perf_list']])
+        #import ipdb; ipdb.set_trace()
+        #epsilons = np.array([iteration['epsilon'] for iteration in results_sampler['perf_list']])
+        #epsilons = epsilons.mean(axis=1).flatten()
+        epsilons = results_sampler['epsilon_mean']
         temp = np.unique(results_sampler['temp_list'])
-        epsilons = epsilons.mean(axis=1).flatten()
+        
         plt.plot(temp, epsilons, label=results_sampler['proposal_kernel']['proposalname'])
     plt.legend()
 
     plt.subplot(338)
     plt.title("temp vs esjd")
     for results_sampler in results_list:
-        ESJD = np.array([iteration['squarejumpdist_realized'] for iteration in results_sampler['perf_list']]).mean(axis=1)
+        #ESJD = np.array([iteration['squarejumpdist_realized'] for iteration in results_sampler['perf_list']]).mean(axis=1)
+        ESJD = results_sampler['ESJD']
         temp = np.unique(results_sampler['temp_list'])
         plt.plot(temp, ESJD, label=results_sampler['proposal_kernel']['proposalname'])
     plt.legend()

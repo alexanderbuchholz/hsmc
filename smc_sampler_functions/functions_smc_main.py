@@ -11,7 +11,8 @@ from help import dichotomic_search
 import inspect
 import time
 import copy
-import pickle
+#import pickle
+import cPickle as pickle
 import datetime
 import os
 import pandas as pd
@@ -236,11 +237,13 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         'parameters' : parameters,
         'proposal_kernel': proposalkerneldict_temp,
         'run_time' : run_time,
-        'perf_list' : perf_list,
+        #'perf_list' : perf_list,
         'target_name' : temperedist.target_name,
-        'L_mean' : np.array([iteration['L'] for iteration in perf_list]).mean(),
-        'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list])[-1,:,:].mean(),
-        'test_dict_list' : test_dict_list
+        'L_mean' : np.atleast_2d(np.array([iteration['L'] for iteration in perf_list])).mean(axis=1),
+        'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list]).mean(axis=1).flatten(),
+        'test_dict_list' : test_dict_list,
+        'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list]
+        #'acceptance_rate' : [iter_res['acceptance_rate'] for iter_res in perf_list]
         }
     #import ipdb; ipdb.set_trace()
     return res_dict
@@ -282,9 +285,10 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
                 res_first_iteration.append(res_dict)
             norm_constant_list[k, m_repetition] = np.sum(res_dict['Z_list'])
             mean_array[k, m_repetition,:] = res_dict['mean_list'][-1]
-            ESJD_array[k, m_repetition] = res_dict['perf_list'][-1]['squarejumpdist_realized'].mean()
-            L_mean_array[k, m_repetition] = res_dict['L_mean']
-            epsilon_mean_array[k, m_repetition] = res_dict['epsilon_mean']
+            #ESJD_array[k, m_repetition] = res_dict['perf_list'][-1]['squarejumpdist_realized'].mean()
+            ESJD_array[k, m_repetition] = res_dict['ESJD'][-1]
+            L_mean_array[k, m_repetition] = res_dict['L_mean'][-1]
+            epsilon_mean_array[k, m_repetition] = res_dict['epsilon_mean'][-1]
             temp_steps_array[k, m_repetition] = len(res_dict['temp_list'])
             temp_steps_array_single[k, m_repetition] = len(np.unique(res_dict['temp_list'])) # single steps
             inter_frame = pd.DataFrame({'ESS' : res_dict['ESS_list'], 'temp' : np.unique(res_dict['temp_list'])})
@@ -317,6 +321,25 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     #root_folder = os.getcwd()
     #import ipdb; ipdb.set_trace()
     return(all_dict, res_first_iteration)
+
+def single_simulation_over_samplers_dims(m_repetition, samplers_list_dict, temperedist, parameters, save_name=''):
+    """
+    """
+    names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
+    root_folder = os.getcwd()
+    target_folder = 'results_simulation_%s'%(temperedist.target_name)
+    # check if folder exists, otherwise create it
+    if not os.path.exists(target_folder):
+        os.makedirs(target_folder)
+    os.chdir(target_folder) # change folder
+
+    # run simulation
+    for k, sampler_dict in enumerate(samplers_list_dict):
+        res_dict = smc_sampler(temperedist,  parameters, sampler_dict)
+        pickle.dump(res_dict, open('%ssampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
+    
+    os.chdir(root_folder) # change back to root
+    #return res_dict
 
 
 if __name__ == '__main__':
