@@ -126,7 +126,7 @@ def prepare_samplers(dim):
 
     hmcdict_ours_adaptive_simple = {'proposalkernel_tune': proposalhmc,
                         'proposalkernel_sample': proposalhmc_parallel,
-                        'proposalname' : 'HMC_L_random_ours_adaptive_simple',
+                        'proposalname' : 'HMC_L_random_ours_adaptive',
                         'target_probability' : 0.9,
                         'covariance_matrix' : np.eye(dim), 
                         'L_steps' : 100,
