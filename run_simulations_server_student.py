@@ -31,25 +31,9 @@ if __name__ == '__main__':
         save_name=targetdistribution['target_name']
 
         samplers_list_dict_non_adaptive = []
-        try : # one single iteration, for the server
-            m_repetition = int(sys.argv[1])
-            print('now running repetition %s in dimension %s' %(m_repetition, dim))
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
-            #import ipdb; ipdb.set_trace()
-            res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
-            # preapare simulation
-            T_time_non_adaptive = len(res_dict['temp_list'])
-            hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
-            hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
-            hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
-            hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
-            samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name)
-
-
-        except: # loop otherwise
+        if sys.argv[1] == 'loop':
             for m_repetition in range(M):
-                print('now running repetition %s in dimension %s' %(m_repetition, dim))
+                print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
                 #import ipdb; ipdb.set_trace()
                 res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
@@ -61,3 +45,21 @@ if __name__ == '__main__':
                 hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
                 samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name)
+
+        elif int(sys.argv[1])>=0: # one single iteration, for the server
+            m_repetition = int(sys.argv[1])
+            print('Single simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
+            #import ipdb; ipdb.set_trace()
+            res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
+            # preapare simulation
+            T_time_non_adaptive = len(res_dict['temp_list'])
+            hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
+            hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
+            hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
+            hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
+            samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name)
+        
+        else: raise ValueError('require loop or other')
+

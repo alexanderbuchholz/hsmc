@@ -8,45 +8,41 @@ import sys
 
 import numpy as np
 
-from setup_simulations_server_log_cox import prepare_samplers
+from setup_simulations_server_student import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10**2, 20**2, 30**2, 64**2]
+dim_list = [10, 20, 50, 100, 200]
 M = 40
 
 
 
 from smc_sampler_functions.functions_smc_main import single_simulation_over_samplers_dims
-from smc_sampler_functions.target_distributions_logcox import priorlogdens_log_cox, priorgradlogdens_log_cox, priorsampler_log_cox
-from smc_sampler_functions.target_distributions_logcox import f_dict_log_cox, targetlogdens_log_cox, targetgradlogdens_log_cox
-priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : priorgradlogdens_log_cox, 'priorsampler': priorsampler_log_cox}
-targetdistribution = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
+from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
+from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
+priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
 
 if __name__ == '__main__':
     for dim in dim_list:
-        parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)
-        parameters_log_cox = f_dict_log_cox(int(dim**0.5))
-        parameters.update(parameters_log_cox)
+        parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)
 
-        #samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
-        samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
+        samplers_list_dict_adaptive = [hmcdict_ours_adaptive_simple, hmcdict_ft_adaptive, rwdict, maladict]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 
         samplers_list_dict_non_adaptive = []
-        if sys.argv[1] == 'loop': # loop otherwise
-            #import ipdb; ipdb.set_trace()
+        if sys.argv[1] == 'loop':
             for m_repetition in range(M):
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
                 #import ipdb; ipdb.set_trace()
                 res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 # preapare simulation
-                adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
-
-                hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
-                hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
-
+                T_time_non_adaptive = len(res_dict['temp_list'])
+                hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
+                hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
+                hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
+                hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
                 samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name)
 
@@ -57,13 +53,11 @@ if __name__ == '__main__':
             #import ipdb; ipdb.set_trace()
             res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             # preapare simulation
-            #import ipdb; ipdb.set_trace()
-            adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
-
-            hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
-            hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
-
-            
+            T_time_non_adaptive = len(res_dict['temp_list'])
+            hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
+            hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
+            hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
+            hmcdict_ours_non_adaptive['proposalname'] = 'HMC_L_random_ours_non_adaptive'
             samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
             single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name)
         

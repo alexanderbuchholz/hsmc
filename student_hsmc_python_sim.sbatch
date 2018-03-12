@@ -9,7 +9,7 @@
 #SBATCH --mem 8000        # Memory request
 #SBATCH -o info_student_%j.out # File to which STDOUT will be written
 #SBATCH -e info_student_%j.err # File to which STDERR will be written
-#SBATCH --array=1-5
+#SBATCH --array=1-40
 
 module load python/2.7.11-fasrc01
 source activate my_root
