@@ -152,18 +152,20 @@ def targetlogdens_student(particles, parameters):
     dim = parameters['dim']
     targetmean = parameters['targetmean']
     targetvariance_inv = parameters['targetvariance_inv']
-    det_targetvariance = parameters['det_targetvariance']
+    logdet_targetvariance = parameters['logdet_targetvariance']
+    #det_targetvariance = parameters['det_targetvariance']
     
     particles_meaned = particles-targetmean
     mat_prod = np.dot(particles_meaned, targetvariance_inv)
     factor_particles = mat_prod*particles_meaned
     factor_particles = factor_particles.sum(axis=1)
-
-    Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.)* det_targetvariance**0.5)
+    #import ipdb; ipdb.set_trace()
+    #Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.)* det_targetvariance**0.5)
+    Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.))
     #return(-(df+dim)/2*np.log(1.+(1./df)*factor_particles)+np.log(Z))
     factor1 = -(df+dim)/2
     factor2 = ne.evaluate('log(1.+(1./df)*factor_particles)')
-    return(factor1*factor2+np.log(Z))
+    return(factor1*factor2+np.log(Z)-0.5*logdet_targetvariance)
 
 #@profile
 def targetlogdens_student_old(particles, parameters):

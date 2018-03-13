@@ -36,11 +36,6 @@ def prepare_samplers(dim):
     epsilon = 1.
     epsilon_hmc = .1
     verbose = False
-    targetmean = np.ones(dim)*2.
-    targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
-    #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
-    targetvariance_inv = np.linalg.inv(targetvariance)
-    l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
     parameters = {'dim' : dim, 
                 'N_particles' : N_particles}
 
@@ -150,9 +145,10 @@ def prepare_samplers(dim):
 
 
 if __name__ == '__main__':
-
+    M_num_repetions = 1
+    parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)
     from smc_sampler_functions.functions_smc_main import repeat_sampling
-    samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]
+    samplers_list_dict_adaptive = [hmcdict_ft_adaptive]#, hmcdict_ours_adaptive, rwdict, maladict]
     samplers_list_dict_non_adaptive = []
 
     # define the target distributions
@@ -170,7 +166,7 @@ if __name__ == '__main__':
     for target_dist in target_dist_list: 
         temperedist = sequence_distributions(parameters, priordistribution, target_dist)
         res_repeated_sampling_adaptive, res_first_iteration_adaptive = repeat_sampling(samplers_list_dict_adaptive, temperedist,  parameters, M_num_repetions=M_num_repetions, save_res=True, save_res_intermediate=True, save_name = target_dist['target_name'])
-        #import ipdb; ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
         adjusted_steps = int(np.ceil(res_repeated_sampling_adaptive['temp_steps'].mean(axis=1)/res_repeated_sampling_adaptive['temp_steps_single'].mean(axis=1))[0])
         hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
         hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps

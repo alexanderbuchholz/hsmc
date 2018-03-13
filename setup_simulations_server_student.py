@@ -34,7 +34,11 @@ def prepare_samplers(dim):
     ESStarget = 0.9
     M_num_repetions = 1
     epsilon = 1.
-    epsilon_hmc = .1
+    
+    if dim > 100: 
+        epsilon_hmc = .05
+    else: 
+        epsilon_hmc = .1
     verbose = False
     targetmean = np.ones(dim)*2.
     targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
@@ -46,7 +50,8 @@ def prepare_samplers(dim):
                 'targetmean': targetmean, 
                 'mean_shift' : np.ones(dim)*1,
                 'targetvariance':targetvariance,
-                'det_targetvariance' : np.linalg.det(targetvariance),
+                'logdet_targetvariance' : np.linalg.slogdet(targetvariance)[1],
+                #'det_targetvariance' : np.linalg.det(targetvariance),
                 'targetvariance_inv':targetvariance_inv,
                 'l_targetvariance_inv':l_targetvariance_inv,
                 'df' : 5

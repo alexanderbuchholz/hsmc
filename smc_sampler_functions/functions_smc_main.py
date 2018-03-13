@@ -226,8 +226,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
     run_time = time_end-time_start
     print('Sampler ended at time %s after %s seconds \n' %(len(temp_list), run_time))
     res_dict = {
-        'mean_list' : mean_list,
-        'var_list' : var_list,
+        'mean_list' : mean_list[-1],
+        'var_list' : var_list[-1],
         'particles_resampled' : particles_resampled, 
         'weights_normalized' : weights_normalized, 
         'Z_list' : Z_list, 
@@ -284,7 +284,8 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             if m_repetition == 0:
                 res_first_iteration.append(res_dict)
             norm_constant_list[k, m_repetition] = np.sum(res_dict['Z_list'])
-            mean_array[k, m_repetition,:] = res_dict['mean_list'][-1]
+            #import ipdb; ipdb.set_trace()
+            mean_array[k, m_repetition,:] = res_dict['mean_list']
             #ESJD_array[k, m_repetition] = res_dict['perf_list'][-1]['squarejumpdist_realized'].mean()
             ESJD_array[k, m_repetition] = res_dict['ESJD'][-1]
             L_mean_array[k, m_repetition] = res_dict['L_mean'][-1]
@@ -294,7 +295,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
             inter_frame = pd.DataFrame({'ESS' : res_dict['ESS_list'], 'temp' : np.unique(res_dict['temp_list'])})
             ESS_dict_all[sampler_dict['proposalname']].append(inter_frame)
             #import ipdb; ipdb.set_trace()
-            var_array[k, m_repetition,:,:] = res_dict['var_list'][-1]
+            var_array[k, m_repetition,:,:] = res_dict['var_list']
             runtime_list[k, m_repetition] = res_dict['run_time']
             particles_array[:,:,k, m_repetition] = res_dict['particles_resampled']
             if save_res_intermediate:

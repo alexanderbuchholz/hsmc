@@ -1,7 +1,7 @@
 # proposal kernels
 import warnings
 from functools import partial
-from help.functions_parallelize import parallelize_partial_over_chunks
+#from help.functions_parallelize import parallelize_partial_over_chunks
 import numpy as np
 from scipy.stats import multivariate_normal
 from multiprocessing.dummy import Pool as ThreadPool 
@@ -284,8 +284,8 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
 
 
 #from .cython.python_smchmc.smc_sampler_functions.cython.leapfrog_cython import loop_leapfrog as cython_loop_leapfrog
-from .cython.leapfrog_cython import loop_leapfrog as cython_loop_leapfrog
-from .cython.leapfrog_cython import leapfrog_transition_individual_parallel
+#from .cython.leapfrog_cython import loop_leapfrog as cython_loop_leapfrog
+#from .cython.leapfrog_cython import leapfrog_transition_individual_parallel
 from numba import jit
 
 @jit()
@@ -456,7 +456,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
     return particles_next, performance_kernel_dict
 
-from help.gaussian_densities_etc import gaussian_vectorized
+#from help.gaussian_densities_etc import gaussian_vectorized
 
 def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, temperature):
     """
