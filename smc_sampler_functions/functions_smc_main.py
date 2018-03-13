@@ -129,7 +129,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         if verbose: 
             print("now sampling")
         summary_particles_list = []
-        summary_particles_list.append(particles_resampled.sum(axis=1))
+        summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
         summary_particles_list.append(particles.sum(axis=1))
         
