@@ -41,7 +41,12 @@ def prepare_samplers(dim):
         epsilon_hmc = .1
     verbose = False
     targetmean = np.ones(dim)*2.
-    targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+    correlation = 0.7*np.ones((dim, dim))
+    np.fill_diagonal(correlation, 1)
+    diag_variance = np.linspace(start=0.01, stop=100, num=dim)
+    targetvariance = np.dot(np.diag(diag_variance**0.5), correlation).dot(np.diag(diag_variance**0.5))
+
+    #targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
     #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
     targetvariance_inv = np.linalg.inv(targetvariance)
     l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
