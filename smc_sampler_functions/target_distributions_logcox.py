@@ -7,7 +7,8 @@ from matplotlib import pyplot as plt
 import sys
 sys.path.append("../help/")
 #import ipdb; ipdb.set_trace()
-from help.gaussian_densities_etc import gaussian_vectorized
+#from help.gaussian_densities_etc import gaussian_vectorized
+from gaussian_densities_etc import gaussian_vectorized
 import pandas as pd
 
 # parameters of the model
@@ -99,8 +100,8 @@ def targetlogdens_log_cox(X, parameters):
     meaned_x = ne.evaluate('X-mu_mean')
     inter_prod = np.dot(inv_covar, meaned_x)
     part4 = ne.evaluate('-0.5*(inter_prod*meaned_x)').sum(axis=0)
-    res = part3+part4
-    #import ipdb; ipdb.set_trace()
+    res = part3+part4+parameters['lognormconst_prior']
+
     return(res)
 
 #@profile
@@ -109,6 +110,7 @@ def targetlogdens_log_cox_old(X, parameters):
     X is a matrix of size [dim, particles]
     Y is a matrix of size [dim, 1]
     """
+    raise ValueError('do not use this version anymore')
     X = X.transpose()
     Y = parameters['Y']
     assert X.shape[1]>=1
@@ -124,7 +126,7 @@ def targetlogdens_log_cox_old(X, parameters):
     part3 = (part1+part2).sum(axis=0)
     meaned_x = ne.evaluate('X-mu_mean')
     part4 = -0.5*((inv_covar).dot(meaned_x)*meaned_x).sum(axis=0)
-    res = part3+part4
+    res = part3+part4+parameters['lognormconst_prior']
     #import pdb; pdb.set_trace()
     return(res)
 
@@ -176,6 +178,7 @@ def targetgradlogdens_log_cox(X, parameters):
     meaned_x = ne.evaluate('X-mu_mean')
     part3 = np.dot(inv_covar, meaned_x)
     res = part2-part3
+    #import ipdb; ipdb.set_trace()
     return(res.transpose())
 
 
@@ -189,12 +192,24 @@ def priorgradlogdens_log_cox(X, parameters):
     return(res.transpose())
 
 if __name__ == '__main__':
-    N = 20
+    N = 30
     res = f_dict_log_cox(N)
 
     particles = np.random.normal(size=(1000, res['dim']))
-    #targetgradlogdens_log_cox(particles, res)
-    for i in range(10):
-        targetlogdens_log_cox(particles, res)
-        targetlogdens_log_cox_old(particles, res)
-        
+    X = np.zeros((1, res['dim']))
+    Y = np.ones((1, res['dim']))
+    mat = np.vstack((X,Y))
+    #targetgradlodens_log_cox(particles, res)
+    #import ipdb; ipdb.set_trace()
+    #for i in range(10):
+    #    targetlogdens_log_cox(particles, res)
+    #    targetlogdens_log_cox_old(particles, res)
+    
+    X = np.zeros((1, res['dim']))
+    priorlogdens_log_cox(X, res)
+    #array([-1746.49994904])
+    Y = np.ones((1, res['dim']))
+    mat = np.vstack((X,Y))
+    targetlogdens_log_cox(mat, res)
+    targetgradlogdens_log_cox(mat, res)
+    #import ipdb; ipdb.set_trace()
