@@ -7,8 +7,8 @@ from matplotlib import pyplot as plt
 import sys
 sys.path.append("../help/")
 #import ipdb; ipdb.set_trace()
-#from help.gaussian_densities_etc import gaussian_vectorized
-from gaussian_densities_etc import gaussian_vectorized
+from help.gaussian_densities_etc import gaussian_vectorized
+#from gaussian_densities_etc import gaussian_vectorized
 import pandas as pd
 
 # parameters of the model
