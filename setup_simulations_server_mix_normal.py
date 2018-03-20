@@ -18,7 +18,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [10, 20, 50, 100]
+dim_list = [10, 20, 50]#, 100]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]
@@ -35,20 +35,36 @@ def prepare_samplers(dim):
     epsilon = 1.
     epsilon_hmc = .1
     verbose = False
-    targetmean = np.ones(dim)*2.
-    targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+    targetmean = np.ones(dim)*4.
+    proportion = 0.3
+    #targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+    correlation1 = 0.7*np.ones((dim, dim))
+    correlation2 = 0.1*np.ones((dim, dim))
+    np.fill_diagonal(correlation1, 1)
+    np.fill_diagonal(correlation2, 1)
+    diag_variance = np.linspace(start=1, stop=2, num=dim)
+    targetvariance1 = np.dot(np.diag(diag_variance**0.5), correlation1).dot(np.diag(diag_variance**0.5))
+    targetvariance2 = np.dot(np.diag(diag_variance**0.5), correlation2).dot(np.diag(diag_variance**0.5))
+
     #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
-    targetvariance_inv = np.linalg.inv(targetvariance)
-    l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
+    targetvariance_inv1 = np.linalg.inv(targetvariance1)
+    l_targetvariance_inv1 = np.linalg.cholesky(targetvariance_inv1)
+    targetvariance_inv2 = np.linalg.inv(targetvariance2)
+    l_targetvariance_inv2 = np.linalg.cholesky(targetvariance_inv2)
+
     parameters = {'dim' : dim, 
                 'N_particles' : N_particles, 
                 'targetmean': targetmean, 
-                'mean_shift' : np.ones(dim)*1,
-                'targetvariance':targetvariance,
-                'det_targetvariance' : np.linalg.det(targetvariance),
-                'targetvariance_inv':targetvariance_inv,
-                'l_targetvariance_inv':l_targetvariance_inv,
-                'df' : 5
+                'mean_shift' : np.ones(dim)*1.,
+                'targetvariance1':targetvariance1,
+                'targetvariance2':targetvariance2,
+                'det_targetvariance1' : np.linalg.det(targetvariance1),
+                'det_targetvariance2' : np.linalg.det(targetvariance2),
+                'targetvariance_inv1':targetvariance_inv1,
+                'targetvariance_inv2':targetvariance_inv2,
+                'l_targetvariance_inv1':l_targetvariance_inv1,
+                'l_targetvariance_inv2':l_targetvariance_inv2,
+                'proportion' : proportion
                 }
 
 
@@ -76,7 +92,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     rwdict = {'proposalkernel_tune': proposalrw,
@@ -95,7 +111,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     hmcdict_ft_adaptive = {'proposalkernel_tune': proposalhmc,
@@ -117,7 +133,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     hmcdict_ours_adaptive = {'proposalkernel_tune': proposalhmc,
@@ -139,7 +155,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
     return(parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive)
 

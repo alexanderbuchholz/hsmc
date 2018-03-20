@@ -129,20 +129,20 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         if verbose: 
             print("now sampling")
         summary_particles_list = []
-        summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
+        summary_particles_list.append(particles+(particles**2))
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
-        summary_particles_list.append(particles.sum(axis=1))
+        summary_particles_list.append(particles+(particles**2))
         
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
-            test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
+            test_dict = test_continue_sampling(summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
-            if not test_dict['test_decision']:
+            if test_dict['test_decision']:
                 break
             else: 
                 particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-                summary_particles_list.append(particles.sum(axis=1))
+                summary_particles_list.append(particles+(particles**2))
                 temp_list.append(temp_curr)
 
             #import ipdb; ipdb.set_trace()
@@ -202,25 +202,32 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
 
     # resample and remove in the end
     summary_particles_list = []
-    summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
+    summary_particles_list.append(particles+(particles**2))
     particles, perfkerneldict = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-    summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
+    summary_particles_list.append(particles+(particles**2))
     temp_list.append(temp_curr)
 
     for move in range(move_steps):
-        test_dict = test_continue_sampling(particles, summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
+        test_dict = test_continue_sampling(summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
         test_dict['temp'] = temp_curr
         test_dict_list.append(test_dict)
-        if not test_dict['test_decision']:
+        if test_dict['test_decision']:
             break
         else: 
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-            summary_particles_list.append(particles.sum(axis=1)+(particles**2).sum(axis=1))
+            summary_particles_list.append(particles+(particles**2))
             #temp_list.append(temp_curr)
         #import ipdb; ipdb.set_trace()
         #np.random.shuffle(proposalkerneldict_temp['epsilon'])
         #np.random.shuffle(proposalkerneldict_temp['L_steps'])
     #pdb.set_trace()
+    #import ipdb; ipdb.set_trace()
+    last_epsilon = perf_list[-1]['epsilon'].flatten()
+    if isinstance(perf_list[-1]['L'], (long, int)):
+        last_L = np.ones(N_particles)
+    else:
+        last_L = perf_list[-1]['L'].flatten()
+
     particles_resampled, weights_normalized = resample(particles, weights_normalized)
     time_end = time.time()
     run_time = time_end-time_start
@@ -242,7 +249,9 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         'L_mean' : np.atleast_2d(np.array([iteration['L'] for iteration in perf_list])).mean(axis=1),
         'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list]).mean(axis=1).flatten(),
         'test_dict_list' : test_dict_list,
-        'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list]
+        'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list],
+        'last_epsilon' : last_epsilon,
+        'last_L' : last_L
         #'acceptance_rate' : [iter_res['acceptance_rate'] for iter_res in perf_list]
         }
     #import ipdb; ipdb.set_trace()

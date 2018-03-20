@@ -103,7 +103,8 @@ def targetlogdens_normal_mix(particles, parameters):
     """
     mean1 = parameters['targetmean']
     mean2 = mean1*-1.
-    return np.log(0.5*multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])+0.5*multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance']))
+    proportion = parameters['proportion']
+    return np.log(proportion*multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance1'])+(1.-proportion)*multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance2']))
     #return multivariate_normal.logpdf(particles, mean=parameters['targetmean'], cov=parameters['targetvariance'])
 
 def targetgradlogdens_normal_mix(particles, parameters):
@@ -116,11 +117,13 @@ def targetgradlogdens_normal_mix(particles, parameters):
 
     meaned_particles1 = particles - mean1
     meaned_particles2 = particles - mean2
-    inv_cov = parameters['targetvariance_inv']
+    inv_cov1 = parameters['targetvariance_inv1']
+    inv_cov2 = parameters['targetvariance_inv2']
+    proportion = parameters['proportion']
     #import pdb; pdb.set_trace()
-    pdf1 = np.atleast_2d(multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance'])).transpose()
-    pdf2 = np.atleast_2d(multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance'])).transpose()
-    numerator = -meaned_particles1.dot(inv_cov)*pdf1 - meaned_particles2.dot(inv_cov)*pdf2
+    pdf1 = proportion*np.atleast_2d(multivariate_normal.pdf(particles, mean=mean1, cov=parameters['targetvariance1'])).transpose()
+    pdf2 = (1-proportion)*np.atleast_2d(multivariate_normal.pdf(particles, mean=mean2, cov=parameters['targetvariance2'])).transpose()
+    numerator = -meaned_particles1.dot(inv_cov1)*pdf1 - meaned_particles2.dot(inv_cov2)*pdf2
     denominator = pdf1+pdf2
     return numerator/denominator
 

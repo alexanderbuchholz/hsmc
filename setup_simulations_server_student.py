@@ -87,7 +87,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     rwdict = {'proposalkernel_tune': proposalrw,
@@ -106,7 +106,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     hmcdict_ft_adaptive = {'proposalkernel_tune': proposalhmc,
@@ -128,7 +128,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     hmcdict_ft_non_adaptive = copy.copy(hmcdict_ft_adaptive)
@@ -153,7 +153,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
     hmcdict_ours_non_adaptive = copy.copy(hmcdict_ours_adaptive_simple)
     hmcdict_ours_non_adaptive['autotempering'] = False
@@ -179,7 +179,7 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.5
+                        'quantile_test': 0.1
                         }
 
     return(parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive)
