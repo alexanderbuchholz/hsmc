@@ -129,20 +129,20 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
         if verbose: 
             print("now sampling")
         summary_particles_list = []
-        summary_particles_list.append(particles+(particles**2))
+        summary_particles_list.append(particles_resampled)
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
-        summary_particles_list.append(particles+(particles**2))
+        summary_particles_list.append(particles)
         
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
-            test_dict = test_continue_sampling(summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
+            test_dict = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'])
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
             if test_dict['test_decision']:
                 break
             else: 
                 particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-                summary_particles_list.append(particles+(particles**2))
+                summary_particles_list.append(particles)
                 temp_list.append(temp_curr)
 
             #import ipdb; ipdb.set_trace()
@@ -202,20 +202,20 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
 
     # resample and remove in the end
     summary_particles_list = []
-    summary_particles_list.append(particles+(particles**2))
+    summary_particles_list.append(particles)
     particles, perfkerneldict = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-    summary_particles_list.append(particles+(particles**2))
+    summary_particles_list.append(particles)
     temp_list.append(temp_curr)
 
     for move in range(move_steps):
-        test_dict = test_continue_sampling(summary_particles_list, temp_curr, temperedist, proposalkerneldict['quantile_test'])
+        test_dict = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'])
         test_dict['temp'] = temp_curr
         test_dict_list.append(test_dict)
         if test_dict['test_decision']:
             break
         else: 
             particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
-            summary_particles_list.append(particles+(particles**2))
+            summary_particles_list.append(particles)
             #temp_list.append(temp_curr)
         #import ipdb; ipdb.set_trace()
         #np.random.shuffle(proposalkerneldict_temp['epsilon'])

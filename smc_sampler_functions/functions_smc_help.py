@@ -65,14 +65,18 @@ class sequence_distributions(object):
         assert temperature>=0.
         return (self.targetgradlogdens(particles, self.parameters)*temperature)+self.priorgradlogdens(particles, self.parameters)*(1.-temperature)
 
+def function_summary_particles(particles):
+    return particles+particles**2
 
-def test_continue_sampling(summary_particles_list, temperature, temperedist, quantile):
+def test_continue_sampling(summary_particles_list, quantile):
     """
     test on whether continue sampling or not
     """
-    #import ipdb; ipdb.set_trace()
+    part1 = function_summary_particles(summary_particles_list[0])
+    part2 = function_summary_particles(summary_particles_list[-1])
     dim = summary_particles_list[0].shape[1]
-    correleations_array = np.array([np.corrcoef(summary_particles_list[0][:,i], summary_particles_list[-1][:,i], rowvar=False)[1,0] for i in range(dim)])
+    correleations_array = np.array([np.corrcoef(part1[:,i], part2[:,i])[1,0] for i in range(dim)])
+    #import ipdb; ipdb.set_trace()
     fraction_low_autocorr = correleations_array<quantile
     
     if fraction_low_autocorr.mean()>=0.9:
