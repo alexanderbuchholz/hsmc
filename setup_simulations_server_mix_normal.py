@@ -18,7 +18,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [10, 20, 50]#, 100]
+#dim_list = [10, 20, 50]#, 100]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]

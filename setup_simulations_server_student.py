@@ -19,7 +19,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 from help.getsize_function import total_size, total_size_dict_entries
 
 # define the parameters
-dim_list = [10, 20, 50, 100, 200]
+#dim_list = [10, 20, 50, 100, 200]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]
@@ -31,7 +31,7 @@ def prepare_samplers(dim):
     T_time = 20
     move_steps_hmc = 20
     move_steps_rw_mala = 100
-    ESStarget = 0.9
+    ESStarget = 0.5
     M_num_repetions = 1
     epsilon = 1.
     
@@ -43,7 +43,7 @@ def prepare_samplers(dim):
     targetmean = np.ones(dim)*2.
     correlation = 0.7*np.ones((dim, dim))
     np.fill_diagonal(correlation, 1)
-    diag_variance = np.linspace(start=0.01, stop=100, num=dim)
+    diag_variance = np.linspace(start=0.1, stop=10, num=dim)
     targetvariance = np.dot(np.diag(diag_variance**0.5), correlation).dot(np.diag(diag_variance**0.5))
 
     #targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))

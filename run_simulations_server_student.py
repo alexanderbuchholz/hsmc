@@ -12,7 +12,7 @@ from setup_simulations_server_student import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 #dim_list = [10, 20, 50]#, 100, 200]
-dim_list = [100, 200]#, 100, 200]
+dim_list = [20, 50, 100, 200, 300]#, 100, 200]
 M = 40
 
 
@@ -39,7 +39,8 @@ if __name__ == '__main__':
                 #import ipdb; ipdb.set_trace()
                 res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 # preapare simulation
-                T_time_non_adaptive = len(res_dict['temp_list'])
+                #import ipdb; ipdb.set_trace()
+                T_time_non_adaptive = len(np.unique(res_dict['temp_list']))
                 hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
                 hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
                 hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive
@@ -54,7 +55,7 @@ if __name__ == '__main__':
             #import ipdb; ipdb.set_trace()
             res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             # preapare simulation
-            T_time_non_adaptive = len(res_dict['temp_list'])
+            T_time_non_adaptive = len(np.unique(res_dict['temp_list']))
             hmcdict_ft_non_adaptive['T_time'] = T_time_non_adaptive
             hmcdict_ft_non_adaptive['proposalname'] = 'HMC_L_random_ft_non_adaptive'
             hmcdict_ours_non_adaptive['T_time'] = T_time_non_adaptive

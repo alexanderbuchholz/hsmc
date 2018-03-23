@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_log_cox import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10**2, 20**2, 30**2, 64**2]
+dim_list = [10**2, 20**2, 30**2]#, 64**2]
 #dim_list = [30**2]
 M = 40
 
