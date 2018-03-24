@@ -30,7 +30,7 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
         epsilon = np.ones((N_particles,1))*epsilon
 
 
-    noise = np.random.normal(size=size_rw).dot(l_matrix_inv)*epsilon
+    noise = np.random.normal(size=size_rw).dot(l_matrix)*epsilon
     #pdb.set_trace()
     particles_proposed = particles+noise
     
