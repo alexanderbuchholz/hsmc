@@ -38,11 +38,11 @@ if __name__ == '__main__':
         if sys.argv[1] == 'loop':
             for m_repetition in range(M):
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
+                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
                 #import ipdb; ipdb.set_trace()
         elif int(sys.argv[1])>=0:
             m_repetition = int(sys.argv[1])
             print('Single simulation : now running repetition %s in dimension %s' %(m_repetition, dim))
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name)
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
 
         else: raise ValueError('require loop or other')
