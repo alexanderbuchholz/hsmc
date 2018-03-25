@@ -399,6 +399,7 @@ def f_dict_logistic_regression(dim):
         #import ipdb as pdb; pdb.set_trace()
         y_all = (proba > np.random.random(N))*1
         y_all = y_all[:, np.newaxis]
+        np.random.seed(None)
     parameters = {'X_all': X_all, 'y_all': y_all}
     return(parameters)
 

@@ -16,7 +16,7 @@ def f_dict_log_cox(N):
     '''
     N is the gridsize
     '''
-    np.random.seed(1)
+    #np.random.seed(1)
     beta = 1./33.
     sigma2 = 1.91
     mu = np.log(126.)-sigma2/2.

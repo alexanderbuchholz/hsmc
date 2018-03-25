@@ -18,12 +18,13 @@ import os
 import pandas as pd
 
 
-def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False):
+def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed=0):
     """
     implements the smc sampler
     """
     #import ipdb; ipdb.set_trace()
     #assert isinstance(temperedist, sequence_distributions)
+    np.random.seed(seed)
     N_particles = parameters['N_particles']
     dim = parameters['dim']
     T_time = proposalkerneldict['T_time']
@@ -288,7 +289,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     for m_repetition in range(M_num_repetions):
         print("repetition %s of %s" %(m_repetition, M_num_repetions), end='\n')
         for k, sampler_dict in enumerate(samplers_list_dict):
-            res_dict = smc_sampler(temperedist,  parameters, sampler_dict)
+            res_dict = smc_sampler(temperedist,  parameters, sampler_dict, seed=m_repetition)
             # save the first instance
             if m_repetition == 0:
                 res_first_iteration.append(res_dict)
@@ -332,7 +333,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     #import ipdb; ipdb.set_trace()
     return(all_dict, res_first_iteration)
 
-def single_simulation_over_samplers_dims(m_repetition, samplers_list_dict, temperedist, parameters, save_name=''):
+def single_simulation_over_samplers_dims(m_repetition, samplers_list_dict, temperedist, parameters, save_name='', seed=None):
     """
     """
     names_samplers = [sampler['proposalname'] for sampler in samplers_list_dict]
@@ -345,7 +346,7 @@ def single_simulation_over_samplers_dims(m_repetition, samplers_list_dict, tempe
 
     # run simulation
     for k, sampler_dict in enumerate(samplers_list_dict):
-        res_dict = smc_sampler(temperedist,  parameters, sampler_dict)
+        res_dict = smc_sampler(temperedist,  parameters, sampler_dict, seed=seed)
         pickle.dump(res_dict, open('%ssampler_%s_rep_%s_dim_%s.p'%(save_name, names_samplers[k], m_repetition, parameters['dim']), 'wb'))
     
     os.chdir(root_folder) # change back to root
