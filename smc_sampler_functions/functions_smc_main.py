@@ -64,7 +64,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
         # resample
         particles_resampled, weights_normalized = resample(particles, weights_normalized)
         
-        # propagate
+        # set the covariance matrix
         if proposalkerneldict['adaptive_covariance'] and temp_curr != 0.:
             proposalkerneldict_temp['covariance_matrix'] = np.diag(np.diag(var_list[-1]))
         
@@ -114,6 +114,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
                     proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict['L_steps'], N_particles)
                 else: 
                     proposalkerneldict_temp['L_steps'] = 1.
+                #import ipdb; ipdb.set_trace()
             else: 
                 results_tuning = tune_mcmc_parameters_fearnhead_taylor(perfkerneldict, proposalkerneldict_temp)
                 # perturb the kernels
@@ -126,17 +127,19 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
                 L_perturbed = results_tuning['L_next']+np.random.random_integers(low=-1,high=1, size=results_tuning['L_next'].shape)
                 L_perturbed = np.clip(L_perturbed, 1, 200)
                 proposalkerneldict_temp['L_steps'] = L_perturbed
+        else: raise ValueError('tuning not available')
         
         if verbose: 
             print("now sampling")
+        # propagation
         summary_particles_list = []
         summary_particles_list.append(particles_resampled)
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
         summary_particles_list.append(particles)
-        
+        correlation_previous = 1.
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
-            test_dict = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'])
+            test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
             if test_dict['test_decision']:
@@ -207,9 +210,9 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
     particles, perfkerneldict = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
     summary_particles_list.append(particles)
     temp_list.append(temp_curr)
-
+    correlation_previous = 1.
     for move in range(move_steps):
-        test_dict = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'])
+        test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
         test_dict['temp'] = temp_curr
         test_dict_list.append(test_dict)
         if test_dict['test_decision']:
