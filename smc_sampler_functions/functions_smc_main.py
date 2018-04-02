@@ -236,35 +236,55 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
     time_end = time.time()
     run_time = time_end-time_start
     print('Sampler ended at time %s after %s seconds \n' %(len(temp_list), run_time))
-    res_dict = {
-        'mean_list' : mean_list[-1],
-        'var_list' : var_list[-1],
-        'particles_resampled' : particles_resampled, 
-        'weights_normalized' : weights_normalized, 
-        'Z_list' : Z_list, 
-        'ESS_list' : ESS_list, 
-        'acceptance_rate_list' : acceptance_rate_list,
-        'temp_list' : temp_list,
-        'parameters' : parameters,
-        'proposal_kernel': proposalkerneldict_temp,
-        'run_time' : run_time,
-        #'perf_list' : perf_list,
-        'target_name' : temperedist.target_name,
-        'L_mean' : np.atleast_2d(np.array([iteration['L'] for iteration in perf_list])).mean(axis=1),
-        'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list]).mean(axis=1).flatten(),
-        'test_dict_list' : test_dict_list,
-        'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list],
-        'last_epsilon' : last_epsilon,
-        'last_L' : last_L
-        #'acceptance_rate' : [iter_res['acceptance_rate'] for iter_res in perf_list]
-        }
+    if dim>1000:
+        res_dict = {
+            'particles_resampled' : particles_resampled, 
+            'weights_normalized' : weights_normalized, 
+            'Z_list' : Z_list, 
+            'ESS_list' : ESS_list, 
+            'acceptance_rate_list' : acceptance_rate_list,
+            'temp_list' : temp_list,
+            'run_time' : run_time,
+            #'perf_list' : perf_list,
+            'target_name' : temperedist.target_name,
+            'L_mean' : np.atleast_2d(np.array([iteration['L'] for iteration in perf_list])).mean(axis=1),
+            'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list]).mean(axis=1).flatten(),
+            'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list],
+            'last_epsilon' : last_epsilon,
+            'last_L' : last_L
+            #'acceptance_rate' : [iter_res['acceptance_rate'] for iter_res in perf_list]
+            }
+
+    else: 
+        res_dict = {
+            'mean_list' : mean_list[-1],
+            'var_list' : var_list[-1],
+            'particles_resampled' : particles_resampled, 
+            'weights_normalized' : weights_normalized, 
+            'Z_list' : Z_list, 
+            'ESS_list' : ESS_list, 
+            'acceptance_rate_list' : acceptance_rate_list,
+            'temp_list' : temp_list,
+            'parameters' : parameters,
+            'proposal_kernel': proposalkerneldict_temp,
+            'run_time' : run_time,
+            #'perf_list' : perf_list,
+            'target_name' : temperedist.target_name,
+            'L_mean' : np.atleast_2d(np.array([iteration['L'] for iteration in perf_list])).mean(axis=1),
+            'epsilon_mean' : np.array([iteration['epsilon'] for iteration in perf_list]).mean(axis=1).flatten(),
+            'test_dict_list' : test_dict_list,
+            'ESJD' : [iter_res['squarejumpdist_realized'].mean() for iter_res in perf_list],
+            'last_epsilon' : last_epsilon,
+            'last_L' : last_L
+            #'acceptance_rate' : [iter_res['acceptance_rate'] for iter_res in perf_list]
+            }
     #import ipdb; ipdb.set_trace()
     return res_dict
 
 
 
 
-def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_res_intermediate=False, save_name=''):
+def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions=50, save_res=True, save_res_intermediate=False, save_name='', seed=0):
     # function that repeats the sampling
     len_list = len(samplers_list_dict)
     dim = parameters['dim']
@@ -292,7 +312,7 @@ def repeat_sampling(samplers_list_dict, temperedist, parameters, M_num_repetions
     for m_repetition in range(M_num_repetions):
         print("repetition %s of %s" %(m_repetition, M_num_repetions), end='\n')
         for k, sampler_dict in enumerate(samplers_list_dict):
-            res_dict = smc_sampler(temperedist,  parameters, sampler_dict, seed=m_repetition)
+            res_dict = smc_sampler(temperedist,  parameters, sampler_dict, seed=m_repetition+seed)
             # save the first instance
             if m_repetition == 0:
                 res_first_iteration.append(res_dict)
