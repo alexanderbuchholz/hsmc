@@ -20,10 +20,6 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 # define the parameters
 #dim_list = [10, 20, 50]#, 100]
 
-try:
-    dim = dim_list[int(sys.argv[1])-1]
-except:
-    dim = 10
 
 def prepare_samplers(dim):
     N_particles = 2**10
@@ -162,6 +158,10 @@ def prepare_samplers(dim):
 
 
 if __name__ == '__main__':
+    try:
+        dim = dim_list[int(sys.argv[1])-1]
+    except:
+        dim = 10
 
     from smc_sampler_functions.functions_smc_main import repeat_sampling
     samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive, rwdict, maladict]

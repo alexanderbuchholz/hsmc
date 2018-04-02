@@ -12,7 +12,7 @@ from setup_simulations_server_student import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 #dim_list = [10, 20, 50]#, 100, 200]
-dim_list = [10, 20, 50, 100, 200, 300]#, 100, 200]
+dim_list = [300, 500]#[10, 20, 50, 100, 200]#, 300]#, 100, 200]
 M = 40
 
 
