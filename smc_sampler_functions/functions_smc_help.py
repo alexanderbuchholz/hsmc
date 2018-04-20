@@ -182,13 +182,15 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptanc
     # case of mala and rw
     if len(perfkerneldict['energy'].shape)==1:
         energy = perfkerneldict['energy'][:,np.newaxis]
-        squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
+        #squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
+        squarejumpdist = perfkerneldict['squarejumpdist_mahalanobis'][:,np.newaxis]
         N_particles, L_total = energy.shape[0], 1
         energy_quant_reg = energy
     # case of hmc
     else: 
         energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
-        squarejumpdist = perfkerneldict['squarejumpdist'][:,1:]
+        #squarejumpdist = perfkerneldict['squarejumpdist'][:,1:]
+        squarejumpdist = perfkerneldict['squarejumpdist_mahalanobis'][:,1:]
         N_particles, L_total = energy.shape
         energy_quant_reg = energy[:,-1]
 
@@ -276,14 +278,16 @@ def sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldic
     # case of mala and rw
     if len(perfkerneldict['energy'].shape)==1:
         energy = perfkerneldict['energy'][:,np.newaxis]
-        squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
+        #squarejumpdist = perfkerneldict['squarejumpdist'][:,np.newaxis]
+        squarejumpdist = perfkerneldict['squarejumpdist_mahalanobis'][:,np.newaxis]
         N_particles, L_total = energy.shape[0], 1
         energy_quant_reg = energy
         L_steps = np.ones(N_particles)
     # case of hmc
     else: 
         energy = -perfkerneldict['energy'][:,1:]+perfkerneldict['energy'][:,:1]
-        squarejumpdist = perfkerneldict['squarejumpdist'][:,-1]
+        #squarejumpdist = perfkerneldict['squarejumpdist'][:,-1]
+        squarejumpdist = perfkerneldict['squarejumpdist_mahalanobis'][:,-1]
         N_particles, L_total = energy.shape
         energy_quant_reg = energy[:,-1]
         L_steps = perfkerneldict['L']

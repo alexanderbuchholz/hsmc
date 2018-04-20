@@ -50,8 +50,11 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
 
     squarejumpdist = np.linalg.norm(particles-particles_proposed, axis=1)**2
     jumping_distance_realized = np.linalg.norm(particles-particles_next, axis=1)**2
+    squarejumpdist_mahalanobis = (((particles-particles_next).dot(l_matrix_inv))*(particles-particles_next).dot(l_matrix_inv)).sum(axis=1)
+    #import ipdb; ipdb.set_trace()
     performance_kernel_dict = {'energy': mh_ratio, 
                                 'squarejumpdist':squarejumpdist,
+                                'squarejumpdist_mahalanobis':squarejumpdist_mahalanobis,
                                 'acceptance_rate':accept_reject_selector.mean(),
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'epsilon':epsilon,
@@ -109,9 +112,11 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     
     squarejumpdist = np.linalg.norm(particles-particles_proposed, axis=1)**2
     jumping_distance_realized = np.linalg.norm(particles-particles_next, axis=1)**2
+    squarejumpdist_mahalanobis = (((particles-particles_next).dot(l_matrix_inv))*(particles-particles_next).dot(l_matrix_inv)).sum(axis=1)
     #normalized_jumping_distance = np.linalg.norm((particles-particles_next).dot(l_matrix_inv), axis=1)**2
     performance_kernel_dict = {'energy': mh_ratio, 
                                 'squarejumpdist':squarejumpdist,
+                                'squarejumpdist_mahalanobis':squarejumpdist_mahalanobis,
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accept_reject_selector.mean(),
                                 'epsilon':epsilon, 
@@ -241,6 +246,8 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     marginal_ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*-p[:, :, -1]).sum(axis=1)
     ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*(x[:, :, -1] - x[:, :, 0])).sum(axis=1)
+    squarejumpdist_mahalanobis = (((x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv))*(x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv)).sum(axis=1)[:,np.newaxis]
+
 
     # accept reject routine
     energy_total = energy_kinetic + energy_potential
@@ -273,6 +280,7 @@ def proposalhmc(particles, parametersmcmc, temperedist, temperature):
         
     performance_kernel_dict = {'energy': energy_total, 
                                 'squarejumpdist':ESJD,
+                                'squarejumpdist_mahalanobis':squarejumpdist_mahalanobis,
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
@@ -415,6 +423,9 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     #ESJD[:, -1] = np.linalg.norm(x[:, :, -1] - x[:, :, 0], axis=1)**2
     ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*(x[:, :, -1] - x[:, :, 0])).sum(axis=1)
+    #import ipdb; ipdb.set_trace()
+    squarejumpdist_mahalanobis = (((x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv))*(x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv)).sum(axis=1)[:,np.newaxis]
+
 
     # accept reject routine
     energy_total = energy_kinetic + energy_potential
@@ -447,6 +458,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         
     performance_kernel_dict = {'energy': energy_total, 
                                 'squarejumpdist':ESJD,
+                                'squarejumpdist_mahalanobis':squarejumpdist_mahalanobis,
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
@@ -456,7 +468,7 @@ def proposalhmc_parallel(particles, parametersmcmc, temperedist, temperature):
         print('acceptance rate: %s, esjd: %s, epsilon mean: %s, L mean: %s' %(accepted.mean(), jumping_distance_realized.mean(), np.mean(epsilon), np.mean(L_steps)))
     return particles_next, performance_kernel_dict
 
-#from help.gaussian_densities_etc import gaussian_vectorized
+from help.gaussian_densities_etc import gaussian_vectorized
 
 def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, temperature):
     """
@@ -521,6 +533,7 @@ def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, tempera
     energy_kinetic[:, -1], energy_potential[:, -1] = f_energy(x[:, :, -1], p[:, :, -1], temperedist.logdensity, temperature, covariance_matrix)
     marginal_ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*-p[:, :, -1]).sum(axis=1)
     ESJD[:, -1] = ((x[:, :, -1] - x[:, :, 0])*(x[:, :, -1] - x[:, :, 0])).sum(axis=1)
+    squarejumpdist_mahalanobis = (((x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv))*(x[:, :, -1] - x[:, :, 0]).dot(l_matrix_inv)).sum(axis=1)[:,np.newaxis]
 
     # accept all particles if using HMC IS
     energy_total = energy_kinetic + energy_potential
@@ -545,6 +558,7 @@ def proposalhmc_is(particles, u_randomness, parametersmcmc, temperedist, tempera
                                 'energy_kinetic' : energy_kinetic,
                                 'energy_potential' : energy_potential,
                                 'squarejumpdist':ESJD,
+                                'squarejumpdist_mahalanobis':squarejumpdist_mahalanobis,
                                 'squarejumpdist_realized':jumping_distance_realized,
                                 'acceptance_rate':accepted.mean(),
                                 'epsilon':epsilon,
