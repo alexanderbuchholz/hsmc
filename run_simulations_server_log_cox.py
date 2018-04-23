@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_log_cox import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10**2, 20**2, 30**2]#, 64**2]
+dim_list = [10**2, 20**2, 30**2, 64**2]
 #dim_list = [30**2]
 M = 40
 
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         parameters.update(parameters_log_cox)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
-        #samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
+        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, maladict]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 
