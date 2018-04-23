@@ -10,8 +10,8 @@ from scipy.stats import norm
 from scipy.special import gamma, erf
 from scipy.special import erf as serf
 import sys
-sys.path.append("../help/")
-sys.path.append("../smc_sampler_functions/")
+#sys.path.append("../help/")
+#sys.path.append("../smc_sampler_functions/")
 from help.gaussian_densities_etc import gaussian_vectorized
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
