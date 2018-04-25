@@ -7,6 +7,7 @@ import numpy as np
 import numexpr as ne
 from scipy.stats import multivariate_normal
 from scipy.stats import norm
+from scipy.stats import zscore
 from scipy.special import gamma, erf
 from scipy.special import erf as serf
 import sys
@@ -377,19 +378,39 @@ def f_dict_logistic_regression(dim):
         X_all = np.hstack((np.ones((N_obs,1)), X_std))
         y_all = data.target
         y_all = y_all[:, np.newaxis]
-        
-    elif dim == 295:
+        name_data = "breast_cancer"
+
+    elif dim == 166:
+        #import ipdb; ipdb.set_trace()
+        data = pd.read_csv('./smc_sampler_functions/data/musk/clean1.data', header=None)
+        X = data.iloc[:,2:-1]
+        X_all  = zscore(X)
+        y_all = data.iloc[:,-1][:, np.newaxis]
+        name_data = "musk"
+
+    elif dim == 60:
+        #import ipdb; ipdb.set_trace()
+        data = pd.read_csv('./smc_sampler_functions/data/sonar/sonar.all-data', header=None)
+        X = data.iloc[:,:-1]
+        X_all  = zscore(X)
+        y_all = (data.iloc[:,-1]=='R')*1.
+        y_all = y_all[:, np.newaxis]
+        name_data = "sonar"
+
+    elif dim == 295: 
         from german_credit import data_z_2way as data
         N_obs = data.shape[0]
         X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
         y_all = (data[:, -1]+1)/2
         y_all = y_all[:, np.newaxis]
+        name_data = "german_credit_interactions"
     elif dim == 25:
         from german_credit import data_z as data
         N_obs = data.shape[0]
         X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
         y_all = (data[:, -1]+1)/2
         y_all = y_all[:, np.newaxis]
+        name_data = "german_credit"
 
     else: 
         np.random.seed(1)
@@ -401,7 +422,8 @@ def f_dict_logistic_regression(dim):
         y_all = (proba > np.random.random(N))*1
         y_all = y_all[:, np.newaxis]
         np.random.seed(None)
-    parameters = {'X_all': X_all, 'y_all': y_all}
+        name_data = "simulated"
+    parameters = {'X_all': X_all, 'y_all': y_all, 'name_data': name_data}
     return(parameters)
 
 def targetgradlogdens_logistic_notjit(particles, X, y):
@@ -592,7 +614,7 @@ def targetlogdens_probit(particles, parameters):
 
 
 if __name__ == '__main__':
-    dim = 301
+    dim = 295
     particles = np.random.normal(size=(1000, dim))
     if False: 
         
