@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_logit_probit import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [25, 31, 301]
+dim_list = [295, 25, 31 ]
 M = 40 
 
 
@@ -32,6 +32,7 @@ if __name__ == '__main__':
         parameters.update(parameters_logistic)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
+        #samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 
@@ -40,7 +41,7 @@ if __name__ == '__main__':
             for m_repetition in range(M):
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
-                #import ipdb; ipdb.set_trace()
+                
         elif int(sys.argv[1])>=0:
             m_repetition = int(sys.argv[1])
             print('Single simulation : now running repetition %s in dimension %s' %(m_repetition, dim))

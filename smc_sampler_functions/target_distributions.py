@@ -16,7 +16,8 @@ from help.gaussian_densities_etc import gaussian_vectorized
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
 import pandas as pd
-from numba import jit
+import numba
+from numba import jit, f8, float64
 from functools import partial
 
 
@@ -377,7 +378,7 @@ def f_dict_logistic_regression(dim):
         y_all = data.target
         y_all = y_all[:, np.newaxis]
         
-    elif dim == 301:
+    elif dim == 295:
         from german_credit import data_z_2way as data
         N_obs = data.shape[0]
         X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
@@ -498,13 +499,15 @@ def targetlogdens_probit_old(particles, parameters):
 
 
 from math import *
+root = np.sqrt(2.0)
+one_over_root = 1./root 
 
 @jit(nopython=True)
 def phi(x):
     #'Cumulative distribution function for the standard normal distribution'
     I, J = x.shape
     res = np.zeros(x.shape)
-    root = sqrt(2.0)
+    root= sqrt(2.)
     for i in range(I):
         for j in range(J):
             #res[i,j] = ((1.0 + erf(x[i,j] / root)) / 2.0)
@@ -512,11 +515,29 @@ def phi(x):
     res = (1.0 + res)/2.0
     return res
 
+#'f8(f8[:,:])', 
+#@jit(float64(float64[:,:]), nopython=True, parallel=True)
+def erf_handcoded(z):
+    t = 1.0 / (1.0 + 0.5 * np.abs(z))
+    # use Horner's method
+    ans = 1 - t * np.exp( -z*z -  1.26551223 + t * ( 1.00002368 +t * ( 0.37409196 + t * ( 0.09678418 + t * (-0.18628806 + t * ( 0.27886807 + t * (-1.13520398 + t * ( 1.48851587 + t * (-0.82215223 + t * ( 0.17087277))))))))))
+    is_positive = 2.*(z >= 0.0)-1.
+    return ans*is_positive
+    #else:
+    #    return -ans
+
 #@jit()
 def phi_scipy(x):
     # same function but based on scipy special
     res = (1.+serf(x/sqrt(2.)))/2.
     return res
+
+#@jit(nopython=True)
+def phi_scipy_new(x):
+    # same function but slightly changed
+    return 0.5*(1.+serf(x*one_over_root))
+    #res = ne.evaluate('(1.+x)/2.')
+    #return res
 
 @jit(nopython=True)
 def dot_numba(X, particles):
@@ -572,51 +593,54 @@ def targetlogdens_probit(particles, parameters):
 
 if __name__ == '__main__':
     dim = 301
-    #particles = np.random.normal(size=(1, dim))
-    #parameters = {'X_all': X_all, 'y_all': y_all}
-    #import ipdb as pdb; pdb.set_trace()
-    parameters = f_dict_logistic_regression(dim)
-    #particles = np.ones((1,parameters['X_all'].shape[1]))
-    particles = np.random.normal(size=(1, parameters['X_all'].shape[1]))
-    particles = np.random.normal(size=(1000, parameters['X_all'].shape[1]))
-    #import ipdb; ipdb.set_trace()
-
-    #import yappi
-    #yappi.start()
-
-    targetlogdens_probit(particles, parameters)
-    X = parameters['X_all']
-    y = parameters['y_all']
-
-    
     particles = np.random.normal(size=(1000, dim))
-    # for the student test
-    targetmean = np.ones(dim)*2.
-    #targetvariance = np.eye(dim)*0.1
-    #targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
-    targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
-    #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
-    targetvariance_inv = np.linalg.inv(targetvariance)
-    l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
-    parameters = {'dim' : dim, 
-                'targetmean': targetmean, 
-                'targetvariance':targetvariance,
-                'det_targetvariance' : np.linalg.det(targetvariance), 
-                'targetvariance_inv':targetvariance_inv,
-                'l_targetvariance_inv':l_targetvariance_inv,
-                'df' : 5
-                }
+    if False: 
+        
+        #particles = np.random.normal(size=(1, dim))
+        #parameters = {'X_all': X_all, 'y_all': y_all}
+        #import ipdb as pdb; pdb.set_trace()
+        parameters = f_dict_logistic_regression(dim)
+        #particles = np.ones((1,parameters['X_all'].shape[1]))
+        particles = np.random.normal(size=(1, parameters['X_all'].shape[1]))
+        particles = np.random.normal(size=(1000, parameters['X_all'].shape[1]))
+        #import ipdb; ipdb.set_trace()
 
-    for m in range(100):
-        targetlogdens_student(particles, parameters)
-        targetlogdens_student_old(particles, parameters)
-        #targetgradlogdens_logistic_help_old(particles, parameters['X_all'], parameters['y_all'])
-        #targetgradlogdens_probit(particles, parameters)
-        #targetgradlogdens_probit_old(particles, parameters)
-        #core_targetlogdens_probit(particles, y, X)
-        #core_targetlogdens_probit_jit(particles, y, X)
+        #import yappi
+        #yappi.start()
 
-    #yappi.get_func_stats().print_all()
+        targetlogdens_probit(particles, parameters)
+        X = parameters['X_all']
+        y = parameters['y_all']
+
+        
+        
+        # for the student test
+        targetmean = np.ones(dim)*2.
+        #targetvariance = np.eye(dim)*0.1
+        #targetvariance = (0.1*(np.diag(np.linspace(start=0.01, stop=100, num=dim))/float(dim) +0.7*np.ones((dim, dim))))
+        targetvariance = (np.diag(np.linspace(start=0.01, stop=100, num=dim)) +0.7*np.ones((dim, dim)))
+        #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
+        targetvariance_inv = np.linalg.inv(targetvariance)
+        l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
+        parameters = {'dim' : dim, 
+                    'targetmean': targetmean, 
+                    'targetvariance':targetvariance,
+                    'det_targetvariance' : np.linalg.det(targetvariance), 
+                    'targetvariance_inv':targetvariance_inv,
+                    'l_targetvariance_inv':l_targetvariance_inv,
+                    'df' : 5
+                    }
+
+        for m in range(100):
+            targetlogdens_student(particles, parameters)
+            targetlogdens_student_old(particles, parameters)
+            #targetgradlogdens_logistic_help_old(particles, parameters['X_all'], parameters['y_all'])
+            #targetgradlogdens_probit(particles, parameters)
+            #targetgradlogdens_probit_old(particles, parameters)
+            #core_targetlogdens_probit(particles, y, X)
+            #core_targetlogdens_probit_jit(particles, y, X)
+
+        #yappi.get_func_stats().print_all()
 
     if False:
         #logistic_log_likelihood_jit = jit(logistic_log_likelihood, nopython=True)

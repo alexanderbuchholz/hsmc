@@ -3007,7 +3007,12 @@ data = np.array([[   1.,    6.,    4.,   12.,    5.,    5.,    3.,    4.,    1.,
        [   2.,   45.,    4.,   46.,    2.,    1.,    3.,    4.,    3.,
           27.,    3.,    1.,    1.,    1.,    1.,    0.,    1.,    1.,
            0.,    0.,    1.,    0.,    0.,    1.,    1.]])
-
+#import ipdb; ipdb.set_trace()
 data_z = np.hstack((stats.zscore(data[:, :24]), np.atleast_2d(-2 * (data[:, -1] - 1.5)).T))
 
-data_z_2way = np.hstack([data_z[:, :-1], two_way(data_z[:, :-1]), data_z[:, -1:]])
+# handle the problem of missing data
+expanded_data = two_way(data[:, :-1])
+#data_z_2way = np.hstack([data_z[:, :-1], two_way(data_z[:, :-1]), data_z[:, -1:]])
+data_z_2way_inter = np.hstack([data_z[:, :-1], stats.zscore(expanded_data), data_z[:, -1:]])
+selector = np.isnan(data_z_2way_inter).sum(axis=0)==0
+data_z_2way = data_z_2way_inter[:,selector]
