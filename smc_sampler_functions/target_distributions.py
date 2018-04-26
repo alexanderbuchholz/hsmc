@@ -8,7 +8,7 @@ import numexpr as ne
 from scipy.stats import multivariate_normal
 from scipy.stats import norm
 from scipy.stats import zscore
-from scipy.special import gamma, erf
+from scipy.special import gamma, erf, gammaln
 from scipy.special import erf as serf
 import sys
 #sys.path.append("../help/")
@@ -166,11 +166,13 @@ def targetlogdens_student(particles, parameters):
     factor_particles = factor_particles.sum(axis=1)
     #import ipdb; ipdb.set_trace()
     #Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.)* det_targetvariance**0.5)
-    Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.))
+    #Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.))
+    log_Z = gammaln((df+dim)/2.)-gammaln((df)/2.)-(dim/2.)*np.log(df*np.pi)
     #return(-(df+dim)/2*np.log(1.+(1./df)*factor_particles)+np.log(Z))
     factor1 = -(df+dim)/2
     factor2 = ne.evaluate('log(1.+(1./df)*factor_particles)')
-    return(factor1*factor2+np.log(Z)-0.5*logdet_targetvariance)
+    #return(factor1*factor2+np.log(Z)-0.5*logdet_targetvariance)
+    return(factor1*factor2+log_Z-0.5*logdet_targetvariance)
 
 #@profile
 def targetlogdens_student_old(particles, parameters):
