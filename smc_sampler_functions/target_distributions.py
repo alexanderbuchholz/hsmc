@@ -34,6 +34,7 @@ def priorlogdens(particles, parameters):
     """
     factor_variance = parameters['factor_variance']
     return(multivariate_normal.logpdf(particles, cov=factor_variance*np.eye(particles.shape[1])))
+    #return(multivariate_normal.logpdf(particles, cov=np.eye(particles.shape[1])))
 
 def priorsampler(parameters, u_randomness):
     """
@@ -45,6 +46,7 @@ def priorsampler(parameters, u_randomness):
     #res = np.random.normal(size=(N_particles, dim))
     factor_variance = parameters['factor_variance']
     res = gaussian_vectorized(u_randomness)*(factor_variance**0.5)
+    #res = gaussian_vectorized(u_randomness)
     return(res)
 
 
@@ -54,6 +56,7 @@ def priorgradlogdens(particles, parameters):
     """
     factor_variance = parameters['factor_variance']
     return -particles/factor_variance
+    #return -particles
 
 def targetlogdens_normal(particles, parameters):
     """
