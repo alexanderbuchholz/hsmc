@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_logit_probit import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [60, 25, 31, 60, 166, 295]
+dim_list = [25, 31, 60, 166]#, 295]
 M = 40 
 
 

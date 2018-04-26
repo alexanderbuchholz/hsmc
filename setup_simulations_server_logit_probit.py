@@ -35,8 +35,10 @@ def prepare_samplers(dim):
     epsilon = 1.
     epsilon_hmc = .1
     verbose = False
+    factor_variance = 5.
     parameters = {'dim' : dim, 
-                'N_particles' : N_particles}
+                'N_particles' : N_particles,
+                'factor_variance': factor_variance}
 
 
 

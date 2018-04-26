@@ -50,6 +50,7 @@ def prepare_samplers(dim):
     #targetvariance = ((np.diag(np.linspace(start=1, stop=2, num=dim)) +0.7*np.ones((dim, dim))))
     targetvariance_inv = np.linalg.inv(targetvariance)
     l_targetvariance_inv = np.linalg.cholesky(targetvariance_inv)
+    factor_variance = 1.
     parameters = {'dim' : dim, 
                 'N_particles' : N_particles, 
                 'targetmean': targetmean, 
@@ -59,7 +60,8 @@ def prepare_samplers(dim):
                 #'det_targetvariance' : np.linalg.det(targetvariance),
                 'targetvariance_inv':targetvariance_inv,
                 'l_targetvariance_inv':l_targetvariance_inv,
-                'df' : 5
+                'df' : 5,
+                'factor_variance': factor_variance
                 }
 
 

@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_logit_probit import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [25, 31, 60, 166, 295]
+dim_list = [25, 31, 60, 166]#, 295]
 M = 40
 
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         parameters.update(parameters_logistic)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
-        samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
+        #samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 
