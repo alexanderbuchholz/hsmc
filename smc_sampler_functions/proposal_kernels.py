@@ -50,7 +50,7 @@ def proposalrw(particles, parametersmcmc, temperedist, temperature):
 
     squarejumpdist = np.linalg.norm(particles-particles_proposed, axis=1)**2
     jumping_distance_realized = np.linalg.norm(particles-particles_next, axis=1)**2
-    squarejumpdist_mahalanobis = (((particles-particles_next).dot(l_matrix_inv))*(particles-particles_next).dot(l_matrix_inv)).sum(axis=1)
+    squarejumpdist_mahalanobis = (((particles-particles_proposed).dot(l_matrix_inv))*(particles-particles_proposed).dot(l_matrix_inv)).sum(axis=1)
     #import ipdb; ipdb.set_trace()
     performance_kernel_dict = {'energy': mh_ratio, 
                                 'squarejumpdist':squarejumpdist,
@@ -112,7 +112,7 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     
     squarejumpdist = np.linalg.norm(particles-particles_proposed, axis=1)**2
     jumping_distance_realized = np.linalg.norm(particles-particles_next, axis=1)**2
-    squarejumpdist_mahalanobis = (((particles-particles_next).dot(l_matrix_inv))*(particles-particles_next).dot(l_matrix_inv)).sum(axis=1)
+    squarejumpdist_mahalanobis = (((particles-particles_proposed).dot(l_matrix_inv))*(particles-particles_proposed).dot(l_matrix_inv)).sum(axis=1)
     #normalized_jumping_distance = np.linalg.norm((particles-particles_next).dot(l_matrix_inv), axis=1)**2
     performance_kernel_dict = {'energy': mh_ratio, 
                                 'squarejumpdist':squarejumpdist,
