@@ -325,6 +325,12 @@ def sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldic
     #L_next = np.int(np.ceil(L_next.mean()))
     epsilon_next = epsilon_flat[res][:, np.newaxis]
     
+    #import matplotlib.pyplot as plt
+    #import seaborn as sns
+    #sns.distplot(L_next); plt.show()
+    #sns.distplot(L_next, hist_kws={'cumulative': True}, kde_kws={'cumulative': True}); plt.show()
+    
+    #import ipdb; ipdb.set_trace()
     return epsilon_next, L_next
 
 
@@ -386,12 +392,16 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
         plt.plot(epsilon, res_median.params*(epsilon**2).flatten(), color='red')
         plt.plot(epsilon, res_lower.params*(epsilon**2).flatten(), color='grey')
         #plt.scatter(y=res_lower.params*(epsilon_current**2).flatten(), x = (epsilon_current).flatten(), color='grey')
-        #import ipdb; ipdb.set_trace()
+        
         plt.title('Variation in energy according to epsilon')
         plt.savefig('energy_temp_%s.png' %(perfkerneldict['temp']))
         #plt.tight_layout(pad=1.2)
         plt.clf()
-
+    
+    #import matplotlib.pyplot as plt
+    #import seaborn as sns
+    #import ipdb; ipdb.set_trace()
+    #plt.scatter(y=energy_quant_reg, x=perfkerneldict['L'])
     return epsilon_next, epsilon_max
 
 
@@ -409,7 +419,7 @@ def tune_mcmc_parameters(perfkerneldict, proposalkerneldict, high_acceptance=Fal
         epsilon_next, epsilon_max = quantile_regression_epsilon(perfkerneldict, proposalkerneldict)
         L_next = proposalkerneldict['L_steps']
 
-    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
+    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max, 'L_max':  L_next.max()}
     return res_dict
 
 def tune_mcmc_parameters_fearnhead_taylor(perfkerneldict, proposalkerneldict, high_acceptance=False):
@@ -422,7 +432,7 @@ def tune_mcmc_parameters_fearnhead_taylor(perfkerneldict, proposalkerneldict, hi
     epsilon_next, L_next = sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldict)
     epsilon_max = 0.
 
-    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
+    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max, 'L_max': L_next.max()}
     return res_dict
 
 
@@ -436,7 +446,18 @@ def tune_mcmc_parameters_simple(perfkerneldict, proposalkerneldict, high_accepta
     epsilon_next, L_next = sample_weighted_epsilon_L_fearnhead_taylor(perfkerneldict, proposalkerneldict)
     __, epsilon_max = quantile_regression_epsilon(perfkerneldict, proposalkerneldict)
 
-    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max}
+    # procedure for adapting 
+    L_max_current = L_next.max()
+    if (L_next==L_max_current).mean()>0.1:
+        L_max = L_max_current+5
+    elif (L_next==L_max_current).mean()<0.05:
+        L_max = L_max_current-5
+        if L_max<1:
+            L_max = L_max_current
+    else: 
+        L_max = L_max_current
+
+    res_dict = {'epsilon_next' : epsilon_next, 'L_next' : L_next, 'epsilon_max': epsilon_max, 'L_max' : L_max}
     return res_dict
 
 

@@ -73,7 +73,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
             if verbose: 
                 print("now tuning")
             # tune the parameters 
-            proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
+            proposalkerneldict_temp['L_max'] = np.copy(proposalkerneldict['L_max'])
             proposalkerneldict_temp['epsilon_sampled'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
             particles, perfkerneldict = proposalkernel_tune(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
             perfkerneldict['temp'] = temp_curr
@@ -90,8 +90,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
                 print("now tuning")
             # tune the parameters 
             #proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
-            if proposalkerneldict['L_steps']>1: # randomize the L steps
-                proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict['L_steps'], N_particles)
+            if proposalkerneldict['L_max']>1: # randomize the L steps
+                proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict_temp['L_max'], N_particles)
             else: 
                 proposalkerneldict_temp['L_steps'] = 1.
 
@@ -104,14 +104,15 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
             proposalkerneldict_temp['epsilon'] = results_tuning['epsilon_next']
             proposalkerneldict_temp['epsilon_max'] = results_tuning['epsilon_max']
             proposalkerneldict_temp['L_steps'] = results_tuning['L_next']
+            proposalkerneldict_temp['L_max'] = results_tuning['L_max']
             #import ipdb; ipdb.set_trace()
 
         # tuning as in the fearnhead and taylor paper
         elif proposalkerneldict_temp['tune_kernel'] == 'fearnhead_taylor':
             if temp_curr == 0.:
                 proposalkerneldict_temp['epsilon'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
-                if proposalkerneldict['L_steps']>1:
-                    proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict['L_steps'], N_particles)
+                if proposalkerneldict['L_max']>1:
+                    proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict['L_max'], N_particles)
                 else: 
                     proposalkerneldict_temp['L_steps'] = 1.
                 #import ipdb; ipdb.set_trace()
