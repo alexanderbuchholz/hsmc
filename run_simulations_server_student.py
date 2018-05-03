@@ -20,14 +20,15 @@ priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlo
 targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
 
 if __name__ == '__main__':
-    
+
     if sys.argv[2] == 'test':
         dim_list = [10]#, 295]
         M = 1
-        print('Run test loop')
+        print('Run test loop student')
     else: 
         dim_list = [10, 20, 50, 100, 200, 300, 400]
         M = 40 
+        print('Run full loop student')
 
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, __, __ = prepare_samplers(dim)

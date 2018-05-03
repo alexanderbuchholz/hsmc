@@ -23,10 +23,11 @@ if __name__ == '__main__':
     if sys.argv[2] == 'test':
         dim_list = [10]#, 295]
         M = 1
-        print('Run test loop')
+        print('Run test loop logit')
     else: 
         dim_list = [25, 31, 60, 166]#, 295]
         M = 40 
+        print('Run full loop logit')
 
 
     for dim in dim_list:

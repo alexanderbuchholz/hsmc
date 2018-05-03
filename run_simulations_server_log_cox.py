@@ -25,10 +25,11 @@ if __name__ == '__main__':
     if sys.argv[2] == 'test':
         dim_list = [10**2]
         M = 1
-        print('Run test loop')
+        print('Run test loop log cox')
     else: 
         dim_list = [10**2, 20**2, 30**2, 40**2, 64**2]
         M = 40
+        print('Run full loop log cox')
 
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)

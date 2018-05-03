@@ -23,10 +23,12 @@ if __name__ == '__main__':
     if sys.argv[2] == 'test':
         dim_list = [10]#, 295]
         M = 1
-        print('Run test loop')
+        print('Run test loop probit')
     else: 
         dim_list = [25, 31, 60, 166]#, 295]
         M = 40 
+        print('Run full loop probit')
+
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive = prepare_samplers(dim)
 
