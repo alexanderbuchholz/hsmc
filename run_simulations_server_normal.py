@@ -11,8 +11,7 @@ import numpy as np
 from setup_simulations_server_student import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10, 20, 50, 100, 200, 300, 400]
-M = 40
+
 
 
 
@@ -23,6 +22,15 @@ priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlo
 targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
 
 if __name__ == '__main__':
+    if sys.argv[2] == 'test':
+        dim_list = [10]#, 295]
+        M = 1
+        print('Run test loop')
+    else: 
+        dim_list = [10, 20, 50, 100, 200, 300, 400]
+        M = 40 
+
+
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)
 

@@ -11,11 +11,6 @@ import numpy as np
 from setup_simulations_server_logit_probit import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [25, 31, 60, 166]#, 295]
-M = 40 
-
-
-
 from smc_sampler_functions.functions_smc_main import single_simulation_over_samplers_dims
 from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
 from smc_sampler_functions.target_distributions import targetlogdens_logistic, targetgradlogdens_logistic, f_dict_logistic_regression
@@ -25,6 +20,15 @@ targetdistribution = {'logdensity' : targetlogdens_logistic, 'gradlogdensity' : 
 
 
 if __name__ == '__main__':
+    if sys.argv[2] == 'test':
+        dim_list = [10]#, 295]
+        M = 1
+        print('Run test loop')
+    else: 
+        dim_list = [25, 31, 60, 166]#, 295]
+        M = 40 
+
+
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive = prepare_samplers(dim)
 

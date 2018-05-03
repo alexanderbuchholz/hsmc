@@ -11,9 +11,7 @@ import numpy as np
 from setup_simulations_server_log_cox import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10**2, 20**2, 30**2, 40**2, 64**2]
-#dim_list = [30**2]
-M = 40
+
 
 
 
@@ -24,6 +22,14 @@ priordistribution = {'logdensity' : priorlogdens_log_cox, 'gradlogdensity' : pri
 targetdistribution = {'logdensity' : targetlogdens_log_cox, 'gradlogdensity' : targetgradlogdens_log_cox, 'target_name': 'log_cox'}
 
 if __name__ == '__main__':
+    if sys.argv[2] == 'test':
+        dim_list = [10**2]
+        M = 1
+        print('Run test loop')
+    else: 
+        dim_list = [10**2, 20**2, 30**2, 40**2, 64**2]
+        M = 40
+
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive = prepare_samplers(dim)
         parameters_log_cox = f_dict_log_cox(int(dim**0.5))
