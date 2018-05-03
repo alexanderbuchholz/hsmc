@@ -18,7 +18,7 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 # define the parameters
-dim_list = [10**2, 20**2, 30**2, 64**2]
+#dim_list = [10**2, 20**2, 30**2, 64**2]
 
 try:
     dim = dim_list[int(sys.argv[1])-1]
@@ -32,7 +32,7 @@ def prepare_samplers(dim):
     move_steps_hmc = 100
     move_steps_rw_mala = 1000
     ESStarget = 0.5
-    M_num_repetions = 40
+    #M_num_repetions = 40
     epsilon = 1.
     epsilon_hmc = .1
     verbose = False
@@ -43,9 +43,9 @@ def prepare_samplers(dim):
 
 
     # prepare the kernels and specify parameters
-    from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
+    #from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
     from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
-    from smc_sampler_functions.functions_smc_main import smc_sampler
+    #from smc_sampler_functions.functions_smc_main import smc_sampler
 
 
     maladict = {'proposalkernel_tune': proposalmala,

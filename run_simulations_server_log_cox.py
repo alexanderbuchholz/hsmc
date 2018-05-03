@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_log_cox import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [10**2, 20**2, 30**2, 64**2]
+dim_list = [10**2, 20**2, 30**2, 40**2, 64**2]
 #dim_list = [30**2]
 M = 40
 
@@ -29,7 +29,7 @@ if __name__ == '__main__':
         parameters_log_cox = f_dict_log_cox(int(dim**0.5))
         parameters.update(parameters_log_cox)
 
-        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
+        #samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, maladict]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
@@ -41,15 +41,15 @@ if __name__ == '__main__':
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
                 single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
                 #import ipdb; ipdb.set_trace()
-                res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
+                #res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 # preapare simulation
-                adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
+                #adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
 
-                hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
-                hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
+                #hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
+                #hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
 
-                samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+                #samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
+                #single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
 
         elif int(sys.argv[1])>=0: # one single iteration, for the server
             m_repetition = int(sys.argv[1])
@@ -59,14 +59,14 @@ if __name__ == '__main__':
             res_dict = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             # preapare simulation
             #import ipdb; ipdb.set_trace()
-            adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
+            #adjusted_steps = int(np.ceil(float(len(res_dict['temp_list'] ))/len(np.unique(res_dict['temp_list']))))
 
-            hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
-            hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
+            #hmcdict_ours_non_adaptive['move_steps'] = adjusted_steps
+            #hmcdict_ft_non_adaptive['move_steps'] = adjusted_steps
 
             
-            samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+            #samplers_list_dict_non_adaptive = [hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive]
+            #single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
         
         else: raise ValueError('require loop or other')
 

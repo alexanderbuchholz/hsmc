@@ -32,7 +32,7 @@ def prepare_samplers(dim):
     move_steps_hmc = 100
     move_steps_rw_mala = 1000
     ESStarget = 0.5
-    M_num_repetions = 1
+    #M_num_repetions = 1
     epsilon = 1.
     
     if dim > 100: 
@@ -68,9 +68,9 @@ def prepare_samplers(dim):
 
 
     # prepare the kernels and specify parameters
-    from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
+    #from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
     from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
-    from smc_sampler_functions.functions_smc_main import smc_sampler
+    #from smc_sampler_functions.functions_smc_main import smc_sampler
 
 
     maladict = {'proposalkernel_tune': proposalmala,
@@ -134,7 +134,7 @@ def prepare_samplers(dim):
                         }
 
     hmcdict_ft_non_adaptive = copy.copy(hmcdict_ft_adaptive)
-    hmcdict_ft_non_adaptive['autotempering'] = False
+    #hmcdict_ft_non_adaptive['autotempering'] = False
 
     hmcdict_ours_adaptive_simple = {'proposalkernel_tune': proposalhmc,
                         'proposalkernel_sample': proposalhmc_parallel,
@@ -158,7 +158,7 @@ def prepare_samplers(dim):
                         'quantile_test': 0.1
                         }
     hmcdict_ours_non_adaptive = copy.copy(hmcdict_ours_adaptive_simple)
-    hmcdict_ours_non_adaptive['autotempering'] = False
+    #hmcdict_ours_non_adaptive['autotempering'] = False
 
 
 
