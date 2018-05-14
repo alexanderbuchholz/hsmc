@@ -82,7 +82,7 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
         epsilon = parametersmcmc['epsilon']
     if epsilon.shape[0] == 1:
         epsilon = np.ones((N_particles,1))*epsilon
-
+    #import pdb; pdb.set_trace()
     covariance_matrix = parametersmcmc['covariance_matrix']
     l_matrix = np.linalg.cholesky(covariance_matrix)
     l_matrix_inv = np.linalg.inv(l_matrix)

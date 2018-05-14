@@ -11,9 +11,14 @@ from scipy.stats import zscore
 from scipy.special import gamma, erf, gammaln
 from scipy.special import erf as serf
 import sys
-#sys.path.append("../help/")
-#sys.path.append("../smc_sampler_functions/")
-from help.gaussian_densities_etc import gaussian_vectorized
+sys.path.append("../help/")
+sys.path.append("../smc_sampler_functions/")
+sys.path.append("../smc_sampler_functions/data/")
+if True: 
+    try:
+        from help.gaussian_densities_etc import gaussian_vectorized
+    except:
+        from gaussian_densities_etc import gaussian_vectorized
 #from help.log_sum_exp import logplus_one
 #from log_sum_exp import logplus_one
 import pandas as pd
@@ -32,9 +37,14 @@ def priorlogdens(particles, parameters):
     particles [N_partiles, dim]
     multivariate normal
     """
-    factor_variance = parameters['factor_variance']
-    return(multivariate_normal.logpdf(particles, cov=factor_variance*np.eye(particles.shape[1])))
+    if 'prior_mean' in parameters.keys() and 'prior_var' in parameters.keys():
+        #import ipdb; ipdb.set_trace()
+        res = multivariate_normal.logpdf(particles, mean=parameters['prior_mean'].flatten(), cov=parameters['prior_var'])
+    else: 
+        factor_variance = parameters['factor_variance']
+        res = multivariate_normal.logpdf(particles, cov=factor_variance*np.eye(particles.shape[1]))
     #return(multivariate_normal.logpdf(particles, cov=np.eye(particles.shape[1])))
+    return(res)
 
 def priorsampler(parameters, u_randomness):
     """
@@ -44,8 +54,12 @@ def priorsampler(parameters, u_randomness):
     #N_particles = parameters['N_particles']
     #dim = parameters['dim']
     #res = np.random.normal(size=(N_particles, dim))
-    factor_variance = parameters['factor_variance']
-    res = gaussian_vectorized(u_randomness)*(factor_variance**0.5)
+    if 'prior_mean' in parameters.keys() and 'prior_var' in parameters.keys():
+        res = gaussian_vectorized(u_randomness).dot(np.linalg.cholesky(parameters['prior_var']))+parameters['prior_mean'].transpose()
+        #import ipdb; ipdb.set_trace()
+    else:
+        factor_variance = parameters['factor_variance']
+        res = gaussian_vectorized(u_randomness)*(factor_variance**0.5)
     #res = gaussian_vectorized(u_randomness)
     return(res)
 
@@ -54,8 +68,12 @@ def priorgradlogdens(particles, parameters):
     """
     particles [N_partiles, dim]
     """
-    factor_variance = parameters['factor_variance']
-    return -particles/factor_variance
+    if 'prior_mean' in parameters.keys() and 'prior_var' in parameters.keys():
+        res = -(particles-parameters['prior_mean'].transpose()).dot(parameters['prior_inv_var'])
+    else: 
+        factor_variance = parameters['factor_variance']
+        res = -particles/factor_variance
+    return res
     #return -particles
 
 def targetlogdens_normal(particles, parameters):
@@ -376,7 +394,7 @@ def targetgradlogdens_logistic_help_old(particles, X, y):
 def targetgradlogdens_logistic(particles, parameters):
     return targetgradlogdens_logistic_help(particles, parameters['X_all'], parameters['y_all'])
 
-def f_dict_logistic_regression(dim):
+def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type='logit'):
     if dim == 31:
         from sklearn.datasets import load_breast_cancer
         data = load_breast_cancer()
@@ -430,8 +448,28 @@ def f_dict_logistic_regression(dim):
         y_all = (proba > np.random.random(N))*1
         y_all = y_all[:, np.newaxis]
         np.random.seed(None)
-        name_data = "simulated"
+        name_data = "simulated_dim_"+str(dim)
     parameters = {'X_all': X_all, 'y_all': y_all, 'name_data': name_data}
+    if save:
+        df = pd.DataFrame(X_all)
+        df['target'] = y_all
+        df.to_csv(name_data+'.csv', index=False)
+    if load_mean_var:
+        #import ipdb; ipdb.set_trace()
+        #import pdb; pdb.set_trace()
+        prior_mean = pd.read_csv('smc_sampler_functions/data/'+name_data+'_mean_'+model_type+'.csv', index_col=0)
+        prior_var = pd.read_csv('smc_sampler_functions/data/'+name_data+'_covar_'+model_type+'.csv', index_col=0)
+        log_Z = pd.read_csv('smc_sampler_functions/data/'+name_data+'_log_Z_'+model_type+'.csv', index_col=0)
+
+        #prior_mean = pd.read_csv('/'+name_data+'_mean_'+model_type+'.csv', index_col=0)
+        #prior_var = pd.read_csv('/'+name_data+'_covar_'+model_type+'.csv', index_col=0)
+        #log_Z = pd.read_csv('/'+name_data+'_log_Z_'+model_type+'.csv', index_col=0)
+        
+        parameters['prior_mean'] = prior_mean.as_matrix()
+        parameters['prior_var'] = prior_var
+        parameters['prior_inv_var'] = np.linalg.inv(prior_var)
+        parameters['prior_log_Z'] = log_Z
+        #import ipdb; ipdb.set_trace()
     return(parameters)
 
 def targetgradlogdens_logistic_notjit(particles, X, y):
@@ -622,6 +660,14 @@ def targetlogdens_probit(particles, parameters):
 
 
 if __name__ == '__main__':
+    # save the data so that it can be used with R
+    f_dict_logistic_regression(5, save=True)
+    f_dict_logistic_regression(10, save=True)
+    #f_dict_logistic_regression(25, save=True)
+    #f_dict_logistic_regression(60, save=True)
+    #f_dict_logistic_regression(166, save=True)
+    #f_dict_logistic_regression(295, save=True)
+
     dim = 295
     particles = np.random.normal(size=(1000, dim))
     if False: 

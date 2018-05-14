@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive = prepare_samplers(dim)
 
-        parameters_logistic = f_dict_logistic_regression(dim)
+        parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='logit')
         parameters.update(parameters_logistic)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
@@ -45,11 +45,11 @@ if __name__ == '__main__':
         if sys.argv[1] == 'loop':
             for m_repetition in range(M):
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
                 
         elif int(sys.argv[1])>=0:
             m_repetition = int(sys.argv[1])
             print('Single simulation : now running repetition %s in dimension %s' %(m_repetition, dim))
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
 
         else: raise ValueError('require loop or other')

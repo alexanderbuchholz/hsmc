@@ -32,7 +32,7 @@ if __name__ == '__main__':
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive = prepare_samplers(dim)
 
-        parameters_logistic = f_dict_logistic_regression(dim)
+        parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='probit')
         parameters.update(parameters_logistic)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
