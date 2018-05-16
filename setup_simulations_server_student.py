@@ -31,7 +31,7 @@ def prepare_samplers(dim):
     T_time = 20
     move_steps_hmc = 100
     move_steps_rw_mala = 1000
-    ESStarget = 0.5
+    ESStarget = 0.9
     #M_num_repetions = 1
     epsilon = 1.
     

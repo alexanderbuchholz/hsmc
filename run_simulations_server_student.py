@@ -26,7 +26,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop student')
     else: 
-        dim_list = [500]#[300, 400]#[10, 20, 50, 100, 200, 300, 400]
+        dim_list = [10, 20, 50, 100, 200, 300, 400, 500] #[500]#[300, 400]#
         M = 40 
         print('Run full loop student')
 
