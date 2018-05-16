@@ -60,7 +60,7 @@ def prepare_samplers(dim):
                 #'det_targetvariance' : np.linalg.det(targetvariance),
                 'targetvariance_inv':targetvariance_inv,
                 'l_targetvariance_inv':l_targetvariance_inv,
-                'df' : 5,
+                'df' : 10,
                 'factor_variance': factor_variance
                 }
 
