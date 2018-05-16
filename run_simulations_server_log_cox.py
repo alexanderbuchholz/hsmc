@@ -27,7 +27,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop log cox')
     else: 
-        dim_list = [25**2, 30**2, 40**2]#[10**2, 20**2, 30**2, 40**2]#, 64**2]
+        dim_list = [50**2]#[25**2, 30**2, 40**2]#[10**2, 20**2, 30**2, 40**2]#, 64**2]
         M = 40
         print('Run full loop log cox')
 
