@@ -98,7 +98,7 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     weights_numerator = weights_numerator1+weights_numerator2
     
     weights_denominator1 = temperedist.logdensity(particles, temperature=temperature)
-    weights_denominator2 = multivariate_normal.logpdf((mu_proposed-particles_proposed).dot(l_matrix_inv)/epsilon, cov=np.eye(dim))
+    weights_denominator2 = multivariate_normal.logpdf((mu_proposed-particles_proposed).dot(l_matrix_inv)/epsilon, mean=np.zeros(dim), cov=np.eye(dim))
     weights_denominator = weights_denominator1+weights_denominator2
     
     mh_ratio = weights_numerator-weights_denominator
