@@ -76,6 +76,58 @@ def priorgradlogdens(particles, parameters):
     return res
     #return -particles
 
+
+def priorlogdens_student(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    multivariate normal
+    """
+    df = parameters['df']
+    dim = parameters['dim']
+    dict_prior = {'targetmean': np.zeros(dim),
+        'targetvariance_inv' : np.eye(dim),
+        'targetvariance' : np.eye(dim),
+        'logdet_targetvariance': np.zeros(1),
+        'dim' : dim,
+        'df': 3
+        }
+    res = targetlogdens_student(particles, dict_prior)
+    return(res)
+
+def priorsampler_student(parameters, u_randomness):
+    """
+    particles [N_partiles, dim]
+    multivariate normal
+    """
+    #N_particles = parameters['N_particles']
+    #dim = parameters['dim']
+    #res = np.random.normal(size=(N_particles, dim))
+    df = parameters['df']
+    dim = parameters['dim']
+    N_particles = parameters['N_particles']
+    res = np.random.standard_t(df, size=(N_particles, dim))
+    return(res)
+
+
+def priorgradlogdens_student(particles, parameters):
+    """
+    particles [N_partiles, dim]
+    """
+    df = parameters['df']
+    dim = parameters['dim']
+    dict_prior = {'targetmean': np.zeros(dim),
+        'targetvariance_inv' : np.eye(dim),
+        'targetvariance' : np.eye(dim),
+        'logdet_targetvariance': np.zeros(1),
+        'dim' : dim,
+        'df': 3
+        }
+    res = targetgradlogdens_student(particles, dict_prior)
+    return res
+    #return -particles
+
+
+
 def targetlogdens_normal(particles, parameters):
     """
     particles [N_partiles, dim]

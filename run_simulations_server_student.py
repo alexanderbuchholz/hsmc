@@ -14,9 +14,9 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 from smc_sampler_functions.functions_smc_main import single_simulation_over_samplers_dims
-from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
+from smc_sampler_functions.target_distributions import priorlogdens_student, priorgradlogdens_student, priorsampler_student
 from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
-priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+priordistribution = {'logdensity' : priorlogdens_student, 'gradlogdensity' : priorgradlogdens_student, 'priorsampler': priorsampler_student}
 targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
 
 if __name__ == '__main__':
