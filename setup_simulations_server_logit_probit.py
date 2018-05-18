@@ -44,7 +44,6 @@ def prepare_samplers(dim):
 
 
     # prepare the kernels and specify parameters
-    from help.f_rand_seq_gen import random_sequence_qmc, random_sequence_rqmc, random_sequence_mc
     from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
     from smc_sampler_functions.functions_smc_main import smc_sampler
 

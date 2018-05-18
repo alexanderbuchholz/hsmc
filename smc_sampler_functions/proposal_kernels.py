@@ -94,7 +94,7 @@ def proposalmala(particles, parametersmcmc, temperedist, temperature):
     mu_reversed = particles_proposed+0.5*epsilon**2*temperedist.gradlogdensity(particles_proposed, temperature=temperature).dot(covariance_matrix)
 
     weights_numerator1 = temperedist.logdensity(particles_proposed, temperature=temperature)
-    weights_numerator2 = multivariate_normal.logpdf((mu_reversed-particles).dot(l_matrix_inv)/epsilon, cov=np.eye(dim))
+    weights_numerator2 = multivariate_normal.logpdf((mu_reversed-particles).dot(l_matrix_inv)/epsilon, mean=np.zeros(dim), cov=np.eye(dim))
     weights_numerator = weights_numerator1+weights_numerator2
     
     weights_denominator1 = temperedist.logdensity(particles, temperature=temperature)
