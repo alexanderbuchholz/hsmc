@@ -42,7 +42,7 @@ def priorlogdens(particles, parameters):
         res = multivariate_normal.logpdf(particles, mean=parameters['prior_mean'].flatten(), cov=parameters['prior_var'])
     else: 
         factor_variance = parameters['factor_variance']
-        res = multivariate_normal.logpdf(particles, cov=factor_variance*np.eye(particles.shape[1]))
+        res = multivariate_normal.logpdf(particles, mean= np.zeros(parameters['dim']), cov=factor_variance*np.eye(particles.shape[1]))
     #return(multivariate_normal.logpdf(particles, cov=np.eye(particles.shape[1])))
     return(res)
 
