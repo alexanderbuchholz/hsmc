@@ -365,8 +365,9 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
     try:
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
-
-            quant_reg = QuantReg(abs(energy_quant_reg), epsilon**2)
+            
+            energy_quant_reg_clipped =  np.clip(abs(energy_quant_reg) , 0, 10**6)
+            quant_reg = QuantReg(energy_quant_reg_clipped, epsilon**2)
             res_median = quant_reg.fit()
             res_lower = quant_reg.fit(0.5)
             #res_upper = quant_reg.fit(0.75)
