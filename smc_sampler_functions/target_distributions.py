@@ -458,19 +458,41 @@ def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type=
         y_all = y_all[:, np.newaxis]
         name_data = "breast_cancer"
 
-    elif dim == 166:
+    elif dim == 106: # previous 166
         #import ipdb; ipdb.set_trace()
         data = pd.read_csv('./smc_sampler_functions/data/musk/clean1.data', header=None)
         X = data.iloc[:,2:-1]
-        X_all  = zscore(X)
+        
+        from sklearn.linear_model import LinearRegression
+        lin_model = LinearRegression()
+        list_indices = range(X.shape[1])
+        list_to_reduce = range(X.shape[1])
+        for i_index in list_indices:
+            list_to_reduce.remove(i_index)
+            lin_model.fit(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+            R_square = lin_model.score(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+            if R_square>0.99:
+                pass # do nothing and keep a short list
+            else: 
+                list_to_reduce.append(i_index) # add the variable back to the list
+        assert len(list_to_reduce) == 105
+        # procedure gives a list of lenght 105
+        #import ipdb; ipdb.set_trace()
+        X_reduced = X.iloc[:,list_to_reduce]
+        N_obs = X_reduced.shape[0]
+        X_all  = zscore(X_reduced)
+        X_all = np.hstack((np.ones((N_obs,1)), X_all))
         y_all = data.iloc[:,-1][:, np.newaxis]
         name_data = "musk"
+        #import ipdb; ipdb.set_trace()
 
-    elif dim == 60:
+    elif dim == 61:
         #import ipdb; ipdb.set_trace()
         data = pd.read_csv('./smc_sampler_functions/data/sonar/sonar.all-data', header=None)
         X = data.iloc[:,:-1]
+        N_obs = data.shape[0]
         X_all  = zscore(X)
+        X_all = np.hstack((np.ones((N_obs,1)), X_all))
         y_all = (data.iloc[:,-1]=='R')*1.
         y_all = y_all[:, np.newaxis]
         name_data = "sonar"

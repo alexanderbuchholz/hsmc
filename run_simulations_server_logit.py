@@ -25,7 +25,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop logit')
     else: 
-        dim_list = [25, 31, 60, 166]#, 295]
+        dim_list = [61, 106]#, 295] 25, 31,
         M = 40 
         print('Run full loop logit')
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive = prepare_samplers(dim)
 
-        parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='logit')
+        parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='logit', save=True)
         parameters.update(parameters_logistic)
 
         samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
