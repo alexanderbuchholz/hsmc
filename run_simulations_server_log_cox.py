@@ -27,7 +27,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop log cox')
     else: 
-        dim_list = [45**2]#[25**2, 30**2, 40**2, 45**2]#[10**2, 20**2, 30**2, 40**2]#, 64**2]
+        dim_list = [64**2]#[25**2, 30**2, 40**2, 45**2]#[10**2, 20**2, 30**2, 40**2]#, 64**2]
         M = 40
         print('Run full loop log cox')
 
@@ -37,7 +37,7 @@ if __name__ == '__main__':
         parameters.update(parameters_log_cox)
 
         #samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
-        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, maladict]
+        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive]#, maladict]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 

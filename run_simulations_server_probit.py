@@ -25,7 +25,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop probit')
     else: 
-        dim_list = [25, 31, 61, 106]#, 295]
+        dim_list = [25, 61, 106]#, 295]
         M = 40 
         print('Run full loop probit')
 
