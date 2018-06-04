@@ -25,7 +25,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop probit')
     else: 
-        dim_list = [25, 61, 95]#, 295]
+        dim_list = [95]#, 295 25, 61, ]
         M = 40 
         print('Run full loop probit')
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='probit')
         parameters.update(parameters_logistic)
 
-        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
+        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive]#, rwdict, maladict]
         #samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
