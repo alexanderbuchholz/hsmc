@@ -468,7 +468,7 @@ def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type=
         list_indices = range(X.shape[1])
         list_to_reduce = range(X.shape[1])
         list_rsquares = []
-        import ipdb; ipdb.set_trace()
+        #import ipdb; ipdb.set_trace()
         if False: # previous version; before comments from james
             for i_index in list_indices: # run over list of indices
                 list_to_reduce.remove(i_index) # remove current index
@@ -489,7 +489,7 @@ def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type=
                 R_square = lin_model.score(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
                 list_rsquares.append(R_square)
                 list_to_reduce.append(i_index) # add the variable back to the list
-            ipdb.set_trace()
+            #ipdb.set_trace()
             sort_indeces = np.argsort(list_rsquares)
             list_to_reduce = sort_indeces[:94]
             assert len(list_to_reduce) == 94
