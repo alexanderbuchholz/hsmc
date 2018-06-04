@@ -458,24 +458,41 @@ def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type=
         y_all = y_all[:, np.newaxis]
         name_data = "breast_cancer"
 
-    elif dim == 106: # previous 166
+    elif dim == 95: # previous 166
         #import ipdb; ipdb.set_trace()
         data = pd.read_csv('./smc_sampler_functions/data/musk/clean1.data', header=None)
         X = data.iloc[:,2:-1]
         
         from sklearn.linear_model import LinearRegression
-        lin_model = LinearRegression()
+        lin_model = LinearRegression(normalize=True)
         list_indices = range(X.shape[1])
         list_to_reduce = range(X.shape[1])
-        for i_index in list_indices:
-            list_to_reduce.remove(i_index)
-            lin_model.fit(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
-            R_square = lin_model.score(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
-            if R_square>0.99:
-                pass # do nothing and keep a short list
-            else: 
+        list_rsquares = []
+        import ipdb; ipdb.set_trace()
+        if False: # previous version; before comments from james
+            for i_index in list_indices: # run over list of indices
+                list_to_reduce.remove(i_index) # remove current index
+                lin_model.fit(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+                R_square = lin_model.score(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+                list_rsquares.append(R_square)
+                if R_square>0.99:
+                    pass # do nothing and keep a short list
+                else: 
+                    list_to_reduce.append(i_index) # add the variable back to the list
+            ipdb.set_trace()
+            assert len(list_to_reduce) == 105
+        else: 
+            for i_index in list_indices: # run over list of indices
+                
+                list_to_reduce.remove(i_index) # remove current index
+                lin_model.fit(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+                R_square = lin_model.score(X=X.iloc[:,list_to_reduce], y= X.iloc[:,i_index])
+                list_rsquares.append(R_square)
                 list_to_reduce.append(i_index) # add the variable back to the list
-        assert len(list_to_reduce) == 105
+            ipdb.set_trace()
+            sort_indeces = np.argsort(list_rsquares)
+            list_to_reduce = sort_indeces[:94]
+            assert len(list_to_reduce) == 94
         # procedure gives a list of lenght 105
         #import ipdb; ipdb.set_trace()
         X_reduced = X.iloc[:,list_to_reduce]

@@ -20,11 +20,13 @@ library(EPGLM)
 path_to_data =  c('/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_5', 
   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_10', 
   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/breast_cancer', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit_interactions',
   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/musk',
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/sonar')
-for (i in 1:7){
+  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/sonar',
+  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit', 
+  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit_interactions'
+)
+
+for (i in 1:5){
   file_name = paste(path_to_data[i], '.csv', sep='')
   data = read.csv(file_name)
   p = length(data)
