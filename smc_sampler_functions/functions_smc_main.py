@@ -24,7 +24,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
     """
     #import ipdb; ipdb.set_trace()
     #assert isinstance(temperedist, sequence_distributions)
-    np.random.seed(seed)
+    np.random.seed(seed+42)
     N_particles = parameters['N_particles']
     dim = parameters['dim']
     T_time = proposalkerneldict['T_time']
