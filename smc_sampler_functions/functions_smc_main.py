@@ -91,7 +91,10 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
             # tune the parameters 
             #proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_steps'])
             if proposalkerneldict['L_max']>1: # randomize the L steps
-                proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict_temp['L_max'], N_particles)
+                try:
+                    proposalkerneldict_temp['L_steps'] = np.random.randint(1, proposalkerneldict_temp['L_max']+1, N_particles)
+                except:
+                    import ipdb; ipdb.set_trace()
             else: 
                 proposalkerneldict_temp['L_steps'] = 1.
 

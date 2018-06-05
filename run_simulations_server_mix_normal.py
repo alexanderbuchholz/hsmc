@@ -11,7 +11,7 @@ import numpy as np
 from setup_simulations_server_mix_normal import prepare_samplers
 from smc_sampler_functions.functions_smc_help import sequence_distributions
 
-dim_list = [2, 5, 10, 15, 20, 25, 30]
+dim_list = [20, 25] # 30 2, 5, 10, 15
 M = 40
 
 
