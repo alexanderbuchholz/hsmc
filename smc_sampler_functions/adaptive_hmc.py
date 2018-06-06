@@ -33,7 +33,7 @@ def bayes_opt_hmc(bounds, temperedist, parameters, hmcdict):
     lengthscale = (np.array((bounds[0][1]-bounds[0][0], bounds[1][1]-bounds[1][0]))*alpha)**2
     ## Define the kernel
     k = GPy.kern.RBF(2, variance=2.0, lengthscale=lengthscale, ARD=True)
-    max_iter = 50
+    max_iter = 30
     # make functions partial for optimisation
 
     hmc_info = "sample constrained wishart first training"
