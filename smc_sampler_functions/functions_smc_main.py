@@ -73,7 +73,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
             if verbose: 
                 print("now tuning")
             # tune the parameters 
-            proposalkerneldict_temp['L_max'] = np.copy(proposalkerneldict['L_max'])
+            #import ipdb; ipdb.set_trace()
+            proposalkerneldict_temp['L_steps'] = np.copy(proposalkerneldict['L_max'])
             proposalkerneldict_temp['epsilon_sampled'] = np.random.random((N_particles,1))*proposalkerneldict_temp['epsilon_max']
             particles, perfkerneldict = proposalkernel_tune(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
             perfkerneldict['temp'] = temp_curr

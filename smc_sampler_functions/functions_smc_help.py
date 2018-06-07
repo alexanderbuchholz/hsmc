@@ -216,6 +216,7 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptanc
     squarejumpdist_flat = squarejumpdist.flatten()
     L_steps_flat = L_steps.flatten()
     weights_flat = energy_weights.flatten()
+    #import ipdb; ipdb.set_trace()
     weighted_squarejumpdist_flat = squarejumpdist_flat*weights_flat/(L_steps_flat)
     epsilon_flat = epsilon.flatten()
     
@@ -236,29 +237,41 @@ def sample_weighted_epsilon_L(perfkerneldict, proposalkerneldict, high_acceptanc
     #L_next = np.int(np.ceil(L_next.mean()))
     epsilon_next = epsilon_flat[res][:, np.newaxis]
     #import ipdb; ipdb.set_trace()
-    if False: 
+    if True: 
+        import seaborn as sns
+        sns.set_style("whitegrid")
+        plt.rc('font', size=20)      
         fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
+        ax = plt.axes(projection='3d')
+        #ax = fig.add_subplot(111, projection='3d')
 
-        surf = ax.plot_trisurf(L_steps_flat, epsilon_flat, weighted_squarejumpdist_flat, cmap=cm.jet, linewidth=0)
-        fig.colorbar(surf)
+        #surf = 
+        ax.plot_trisurf(L_steps_flat, epsilon_flat, weighted_squarejumpdist_flat, cmap=cm.binary, linewidth=0.4)
+        #fig.colorbar(surf)
 
-        ax.xaxis.set_major_locator(MaxNLocator(5))
-        ax.yaxis.set_major_locator(MaxNLocator(6))
-        ax.zaxis.set_major_locator(MaxNLocator(5))
-
+        #ax.xaxis.set_major_locator(MaxNLocator(5))
+        #ax.yaxis.set_major_locator(MaxNLocator(6))
+        #ax.zaxis.set_major_locator(MaxNLocator(5))
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        ax.set_zlabel('z')
         #fig.tight_layout()
         #import ipdb; ipdb.set_trace()
-        fig.savefig('3D_temp_%s.png' %(perfkerneldict['temp']))
+        for item in ([ax.title, ax.xaxis.label, ax.yaxis.label, ax.zaxis.label] + ax.get_xticklabels() + ax.get_yticklabels()+ax.get_zticklabels()):
+            item.set_fontsize(14)
+        #plt.axis('off')
+        fig.savefig('3D_temp_%s.pdf' %(perfkerneldict['temp']))
+
         fig.clf()
         #ax.clf()
         #surf.clf()
         #plt.show()
+        #import ipdb; ipdb.set_trace()
         plt.hist(epsilon_next)
         plt.savefig('hist_epsilon_temp_%s.png' %(perfkerneldict['temp']))
         plt.clf()
         plt.hist(L_next)
-        plt.savefig('hist_L_temp_%s.png' %(perfkerneldict['temp']))
+        plt.savefig('hist_L_temp_%s.png' %(perfkerneldict['temp']), bbox_inches='tight')
         plt.clf()
 
     # choose the argmax
@@ -386,16 +399,22 @@ def quantile_regression_epsilon(perfkerneldict, proposalkerneldict):
         epsilon_next = np.mean(epsilon)
         #import ipdb; ipdb.set_trace()
 
-    if False:
+    if True:
         #import ipdb; ipdb.set_trace()
         from matplotlib import pyplot as plt
+        import seaborn as sns
+        plt.rc('font', size=20)
+        sns.set_style("whitegrid")
+
         plt.scatter(y=energy_quant_reg, x = epsilon, color='blue')
-        plt.plot(epsilon, res_median.params*(epsilon**2).flatten(), color='red')
-        plt.plot(epsilon, res_lower.params*(epsilon**2).flatten(), color='grey')
+        plt.xlabel('epsilon', fontsize=14)
+        plt.ylabel('Variation energy', fontsize=14)
+        #plt.plot(epsilon, res_median.params*(epsilon**2).flatten(), color='red')
+        #plt.plot(epsilon, res_lower.params*(epsilon**2).flatten(), color='grey')
         #plt.scatter(y=res_lower.params*(epsilon_current**2).flatten(), x = (epsilon_current).flatten(), color='grey')
         
-        plt.title('Variation in energy according to epsilon')
-        plt.savefig('energy_temp_%s.png' %(perfkerneldict['temp']))
+        #plt.title('Variation in energy according to epsilon')
+        plt.savefig('energy_temp_%s.pdf' %(perfkerneldict['temp']))
         #plt.tight_layout(pad=1.2)
         plt.clf()
     
