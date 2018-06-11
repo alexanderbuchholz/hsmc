@@ -517,10 +517,41 @@ def f_dict_logistic_regression(dim, save=False, load_mean_var=False, model_type=
     elif dim == 295: 
         from german_credit import data_z_2way as data
         N_obs = data.shape[0]
+
         X_all = np.hstack((np.ones((N_obs,1)), data[:,:-1]))
         y_all = (data[:, -1]+1)/2
         y_all = y_all[:, np.newaxis]
         name_data = "german_credit_interactions"
+        if False:
+            from sklearn.linear_model import LinearRegression
+            lin_model = LinearRegression(normalize=True)
+            list_indices = range(X_all.shape[1])
+            list_to_reduce = range(X_all.shape[1])
+            list_rsquares = []
+            if False: 
+                for i_index in list_indices: # run over list of indices
+                    
+                    list_to_reduce.remove(i_index) # remove current index
+                    lin_model.fit(X=X_all[:,list_to_reduce], y= X_all[:,i_index])
+                    R_square = lin_model.score(X=X_all[:,list_to_reduce], y= X_all[:,i_index])
+                    list_rsquares.append(R_square)
+                    list_to_reduce.append(i_index) # add the variable back to the list
+                sort_indeces = np.argsort(list_rsquares)
+                list_to_reduce = sort_indeces[:94]
+                import ipdb; ipdb.set_trace()
+            if True:
+                for i_index in list_indices: # run over list of indices
+                    list_to_reduce.remove(i_index) # remove current index
+                    lin_model.fit(X=X_all[:,list_to_reduce], y= X_all[:,i_index])
+                    R_square = lin_model.score(X=X_all[:,list_to_reduce], y= X_all[:,i_index])
+                    list_rsquares.append(R_square)
+                    if R_square>0.99:
+                        pass # do nothing and keep a short list
+                    else: 
+                        list_to_reduce.append(i_index) # add the variable back to the list
+                import ipdb; ipdb.set_trace()
+
+
     elif dim == 25:
         from german_credit import data_z as data
         N_obs = data.shape[0]

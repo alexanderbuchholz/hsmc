@@ -26,7 +26,7 @@ except:
     dim = 25
 
 def prepare_samplers(dim):
-    N_particles = 2**8
+    N_particles = 2**10
     T_time = 20
     move_steps_hmc = 100
     move_steps_rw_mala = 1000

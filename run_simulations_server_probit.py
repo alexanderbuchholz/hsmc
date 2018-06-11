@@ -35,7 +35,7 @@ if __name__ == '__main__':
         parameters_logistic = f_dict_logistic_regression(dim, load_mean_var=True, model_type='probit')
         parameters.update(parameters_logistic)
 
-        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive]#, rwdict, maladict]
+        samplers_list_dict_adaptive = [hmcdict_ft_adaptive, hmcdict_ours_adaptive]#, rwdict, maladict]
         #samplers_list_dict_adaptive = [hmcdict_ft_adaptive]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
@@ -45,13 +45,13 @@ if __name__ == '__main__':
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
                 #import yappi
                 #yappi.start()
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
                 #yappi.stop()
                 #yappi.get_func_stats().print_all()
                 #import ipdb; ipdb.set_trace()
         elif int(sys.argv[1])>=0:
             m_repetition = int(sys.argv[1])
             print('Single simulation : now running repetition %s in dimension %s' %(m_repetition, dim))
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
 
         else: raise ValueError('require loop or other')
