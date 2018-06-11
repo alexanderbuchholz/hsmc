@@ -25,7 +25,7 @@ if __name__ == '__main__':
         M = 1
         print('Run test loop logit')
     else: 
-        dim_list = [95]#, 295] 25, 31, 61
+        dim_list = [95]#, 95 295] 25, 31, 61
         M = 40 
         print('Run full loop logit')
 
