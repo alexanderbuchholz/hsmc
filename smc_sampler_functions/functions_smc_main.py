@@ -172,7 +172,10 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
             precalc_dict = temperedist.precalc_logdensity(particles)
             partial_ess_target = partial(ESS_target_dichotomic_search_simplified, temperatureprevious=temp_curr, ESStarget=ESStarget, precalc_dict=precalc_dict)
             #import ipdb; ipdb.set_trace()
-            temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=100)
+            if partial_ess_target(1.)>0.:
+                temp_next = 1.
+            else: 
+                temp_next = dichotomic_search.f_dichotomic_search(np.array([temp_curr,1.]), partial_ess_target, N_max_steps=100)
             print('temperature %s' %(temp_next), end='\r')
             assert temp_next <= 1.
             if temp_next > 1.:
