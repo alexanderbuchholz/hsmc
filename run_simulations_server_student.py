@@ -28,7 +28,7 @@ if __name__ == '__main__':
     else: 
         #dim_list = [10, 20, 50, 100, 200, 300, 400, 500] #[500]#[300, 400]#
         dim_list = [10, 20, 30, 40, 50, 75, 100, 125, 150] #[500]#[300, 400]#
-        M = 40 
+        M = 100 
         print('Run full loop student')
 
     for dim in dim_list:
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         if sys.argv[1] == 'loop':
             for m_repetition in range(M):
                 print('Repeated simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
                 #import ipdb; ipdb.set_trace()
                 res_dict_hmc = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 res_dict_mala = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[1]['proposalname'], m_repetition, parameters['dim']), 'rb'))
@@ -63,12 +63,12 @@ if __name__ == '__main__':
                 hmcdict_ours_non_adaptive['quantile_test'] = 0.00001
 
                 samplers_list_dict_non_adaptive = [maladict_non_adaptive, hmcdict_ours_non_adaptive]
-                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+                single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
 
         elif int(sys.argv[1])>=0: # one single iteration, for the server
             m_repetition = int(sys.argv[1])
             print('Single simulation: now running repetition %s in dimension %s' %(m_repetition, dim))
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
             res_dict_hmc = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             res_dict_mala = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[1]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             # preapare simulation
@@ -84,7 +84,7 @@ if __name__ == '__main__':
             hmcdict_ours_non_adaptive['quantile_test'] = 0.00001
 
             samplers_list_dict_non_adaptive = [maladict_non_adaptive, hmcdict_ours_non_adaptive]
-            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition)
+            single_simulation_over_samplers_dims(m_repetition, samplers_list_dict_non_adaptive, temperedist, parameters, save_name=save_name, seed=m_repetition, verbose=True)
         
         else: raise ValueError('require loop or other')
 

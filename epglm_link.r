@@ -17,24 +17,27 @@ install.packages(pkgs=pkgFile, type="source", repos=NULL)
 unlink(pkgFile)
 library(EPGLM)
 
-path_to_data =  c('/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_5', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_10', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/breast_cancer', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/musk',
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/sonar',
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit', 
-  '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit_interactions'
-)
+# path_to_data =  c('/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_5', 
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/simulated_dim_10', 
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/breast_cancer', 
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/musk',
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/sonar',
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit', 
+#   '/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/german_credit_interactions'
+# )
 
-for (i in 1:5){
+path_to_data =  c('/home/alex/Dropbox/smc_hmc/python_smchmc/smc_sampler_functions/data/sonar')
+
+prior_var = 1
+for (i in 1:1){
   file_name = paste(path_to_data[i], '.csv', sep='')
   data = read.csv(file_name)
   p = length(data)
   X = as.matrix(data[,1:p-1])
   y = as.matrix(data[,p])
   
-  res_logit = EPlogit(X, y, 1)
-  res_probit = EPprobit(X, y, 1)
+  res_logit = EPlogit(X, y, prior_var)
+  res_probit = EPprobit(X, y, prior_var)
   
   covar_matrix_logit = res_logit$V
   mean_matirx_logit = res_logit$m
