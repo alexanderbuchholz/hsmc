@@ -102,10 +102,12 @@ def priorsampler_student(parameters, u_randomness):
     #N_particles = parameters['N_particles']
     #dim = parameters['dim']
     #res = np.random.normal(size=(N_particles, dim))
-    df = parameters['df']
+    df = 3.
     dim = parameters['dim']
     N_particles = parameters['N_particles']
-    res = np.random.standard_t(df, size=(N_particles, dim))
+    res1 = np.random.normal(size=(N_particles, dim))
+    res2 = np.random.chisquare(df, size=(N_particles,1))
+    res = res1/np.sqrt(res2/df)
     return(res)
 
 
@@ -120,7 +122,7 @@ def priorgradlogdens_student(particles, parameters):
         'targetvariance' : np.eye(dim),
         'logdet_targetvariance': np.zeros(1),
         'dim' : dim,
-        'df': 3
+        'df': 3.
         }
     res = targetgradlogdens_student(particles, dict_prior)
     return res
@@ -245,7 +247,7 @@ def targetlogdens_student(particles, parameters):
     #Z = gamma((df+dim)/2.)/(gamma((df)/2.)*(df*np.pi)**(dim/2.))
     log_Z = gammaln((df+dim)/2.)-gammaln((df)/2.)-(dim/2.)*np.log(df*np.pi)
     #return(-(df+dim)/2*np.log(1.+(1./df)*factor_particles)+np.log(Z))
-    factor1 = -(df+dim)/2
+    factor1 = -(df+dim)/2.
     factor2 = ne.evaluate('log(1.+(1./df)*factor_particles)')
     #return(factor1*factor2+np.log(Z)-0.5*logdet_targetvariance)
     return(factor1*factor2+log_Z-0.5*logdet_targetvariance)
