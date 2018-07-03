@@ -88,6 +88,19 @@ def test_continue_sampling(summary_particles_list, quantile, correlation_previou
     correlation_previous = correleations_array*correlation_previous
     return(results_test_dict, correlation_previous)
 
+def test_continue_sampling_gradients(summary_particles_list, quantile, temp_curr, temperedist, N_particles, dim):
+
+    gradients_current = temperedist.gradlogdensity(summary_particles_list[-1], temp_curr)
+    gradients_current_sum = gradients_current.mean(axis=0).sum()
+    estimator_covar_current = gradients_current.transpose().dot(gradients_current)/N_particles
+    estimator_covar_current_sum = estimator_covar_current.sum()
+    stat_test = N_particles*(gradients_current_sum**2)/estimator_covar_current_sum
+    test_decision = chi2.cdf(stat_test, dim) < quantile#proposalkerneldict['quantile_test']
+    results_test_dict = {'test_decision' : test_decision, 'test_statistic' : stat_test, 'quantile' : quantile}
+
+    return(results_test_dict)
+
+
 def logincrementalweights(particles, temperedist, temperature):
     """
     returns the log incremental weights
