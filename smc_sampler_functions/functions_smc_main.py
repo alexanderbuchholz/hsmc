@@ -1,7 +1,7 @@
 # smc sampler
 from __future__ import print_function
 import numpy as np
-from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, tune_mcmc_parameters_fearnhead_taylor, ESS_target_dichotomic_search_simplified, tune_mcmc_parameters_simple
+from functions_smc_help import logincrementalweights, reweight, resample, ESS, ESS_target_dichotomic_search, sequence_distributions, tune_mcmc_parameters, test_continue_sampling, test_continue_sampling_gradients, tune_mcmc_parameters_fearnhead_taylor, ESS_target_dichotomic_search_simplified, tune_mcmc_parameters_simple
 from functools import partial
 
 import sys
@@ -16,6 +16,7 @@ import cPickle as pickle
 import datetime
 import os
 import pandas as pd
+from scipy.stats import chi2
 
 
 def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed=0):
@@ -142,12 +143,28 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
         particles, perfkerneldict = proposalkernel_sample(particles_resampled, proposalkerneldict_temp, temperedist, temp_curr)
         summary_particles_list.append(particles)
         correlation_previous = 1.
+        
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
-            test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
+            # test the new procedure here
+            if proposalkerneldict['score_test']:
+                # test_dict = {}
+                # gradients_current = temperedist.gradlogdensity(summary_particles_list[-1], temp_curr)
+                # gradients_current_sum = gradients_current.mean(axis=0).sum()
+                # estimator_covar_current = gradients_current.transpose().dot(gradients_current)/N_particles
+                # estimator_covar_current_sum = estimator_covar_current.sum()
+                # stat_test = N_particles*(gradients_current_sum**2)/estimator_covar_current_sum
+                # test_decision = chi2.cdf(stat_test, dim) < 0.1#proposalkerneldict['quantile_test']
+                # test_dict['test_decision'] = test_decision
+                # test_dict['temp'] = temp_curr
+                test_dict = test_continue_sampling_gradients(summary_particles_list, 0.05, temp_curr, temperedist, N_particles, dim)
+            else: 
+                test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
+
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
-            if test_dict['test_decision']:
+            if test_dict['test_decision'] or temp_curr==0.:
+            #if test_dict['test_decision']:
                 break
             else: 
                 particles, __ = proposalkernel_sample(particles, proposalkerneldict_temp, temperedist, temp_curr)
@@ -220,7 +237,21 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
     temp_list.append(temp_curr)
     correlation_previous = 1.
     for move in range(move_steps):
-        test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
+        if proposalkerneldict['score_test']:
+            # test_dict = {}
+            # gradients_current = temperedist.gradlogdensity(summary_particles_list[-1], temp_curr)
+            # gradients_current_sum = gradients_current.mean(axis=0).sum()
+            # estimator_covar_current = gradients_current.transpose().dot(gradients_current)/N_particles
+            # estimator_covar_current_sum = estimator_covar_current.sum()
+            # stat_test = N_particles*(gradients_current_sum**2)/estimator_covar_current_sum
+            # test_decision = chi2.cdf(stat_test, dim) < 0.1#proposalkerneldict['quantile_test']
+            # test_dict['test_decision'] = test_decision
+            # test_dict['temp'] = temp_curr
+            test_dict = test_continue_sampling_gradients(summary_particles_list, 0.05, temp_curr, temperedist, N_particles, dim)
+        
+        else: 
+            test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
+
         test_dict['temp'] = temp_curr
         test_dict_list.append(test_dict)
         if test_dict['test_decision']:

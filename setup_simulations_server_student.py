@@ -72,7 +72,7 @@ def prepare_samplers(dim):
     from smc_sampler_functions.proposal_kernels import proposalmala, proposalrw, proposalhmc, proposalhmc_parallel
     #from smc_sampler_functions.functions_smc_main import smc_sampler
 
-
+    score_test = True
     maladict = {'proposalkernel_tune': proposalmala,
                         'proposalkernel_sample': proposalmala,
                         'proposalname' : 'MALA',
@@ -89,7 +89,8 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.1
+                        'quantile_test': 0.1, 
+                        'score_test' : score_test
                         }
 
     rwdict = {'proposalkernel_tune': proposalrw,
@@ -108,7 +109,8 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.1
+                        'quantile_test': 0.1,
+                        'score_test' : score_test
                         }
 
     hmcdict_ft_adaptive = {'proposalkernel_tune': proposalhmc,
@@ -116,7 +118,7 @@ def prepare_samplers(dim):
                         'proposalname' : 'HMC_L_random_ft_adaptive',
                         'target_probability' : 0.9,
                         'covariance_matrix' : np.eye(dim), 
-                        'L_max' : 25,
+                        'L_max' : 50,
                         'epsilon' : np.array([epsilon_hmc]),
                         'epsilon_max' : np.array([epsilon_hmc]),
                         'accept_reject' : True,
@@ -130,7 +132,8 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.1
+                        'quantile_test': 0.1,
+                        'score_test' : score_test
                         }
 
     hmcdict_ft_non_adaptive = copy.copy(hmcdict_ft_adaptive)
@@ -141,7 +144,7 @@ def prepare_samplers(dim):
                         'proposalname' : 'HMC_L_random_ours_adaptive',
                         'target_probability' : 0.9,
                         'covariance_matrix' : np.eye(dim), 
-                        'L_max' : 25,
+                        'L_max' : 50,
                         'epsilon' : np.array([epsilon_hmc]),
                         'epsilon_max' : np.array([epsilon_hmc]),
                         'accept_reject' : True,
@@ -155,7 +158,8 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.1
+                        'quantile_test': 0.1,
+                        'score_test' : score_test
                         }
     hmcdict_ours_non_adaptive = copy.copy(hmcdict_ours_adaptive_simple)
     #hmcdict_ours_non_adaptive['autotempering'] = False
@@ -167,7 +171,7 @@ def prepare_samplers(dim):
                         'proposalname' : 'HMC_L_random_ours_adaptive_extensive',
                         'target_probability' : 0.9,
                         'covariance_matrix' : np.eye(dim), 
-                        'L_max' : 25,
+                        'L_max' : 50,
                         'epsilon' : np.array([epsilon_hmc]),
                         'epsilon_max' : np.array([epsilon_hmc]),
                         'accept_reject' : True,
@@ -181,7 +185,8 @@ def prepare_samplers(dim):
                         'autotempering' : True,
                         'ESStarget': ESStarget,
                         'adaptive_covariance' : True,
-                        'quantile_test': 0.1
+                        'quantile_test': 0.1,
+                        'score_test' : score_test
                         }
 
     return(parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, hmcdict_ft_non_adaptive, hmcdict_ours_non_adaptive)
