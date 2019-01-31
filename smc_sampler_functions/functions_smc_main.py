@@ -147,7 +147,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
         for move in range(move_steps):
             #import ipdb; ipdb.set_trace()
             # test the new procedure here
-            if proposalkerneldict['score_test']:
+            if False: #proposalkerneldict['score_test']:
                 # test_dict = {}
                 # gradients_current = temperedist.gradlogdensity(summary_particles_list[-1], temp_curr)
                 # gradients_current_sum = gradients_current.mean(axis=0).sum()
@@ -158,8 +158,8 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
                 # test_dict['test_decision'] = test_decision
                 # test_dict['temp'] = temp_curr
                 test_dict = test_continue_sampling_gradients(summary_particles_list, 0.05, temp_curr, temperedist, N_particles, dim)
-            else: 
-                test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
+            #else: 
+            test_dict, correlation_previous = test_continue_sampling(summary_particles_list, proposalkerneldict['quantile_test'], correlation_previous)
 
             test_dict['temp'] = temp_curr
             test_dict_list.append(test_dict)
@@ -237,7 +237,7 @@ def smc_sampler(temperedist, parameters, proposalkerneldict, verbose=False, seed
     temp_list.append(temp_curr)
     correlation_previous = 1.
     for move in range(move_steps):
-        if proposalkerneldict['score_test']:
+        if False: #proposalkerneldict['score_test']:
             # test_dict = {}
             # gradients_current = temperedist.gradlogdensity(summary_particles_list[-1], temp_curr)
             # gradients_current_sum = gradients_current.mean(axis=0).sum()
