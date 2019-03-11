@@ -37,7 +37,7 @@ if __name__ == '__main__':
         parameters.update(parameters_logistic)
 
         #samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive]#, rwdict, maladict]
-        samplers_list_dict_adaptive = [rwdict, maladict]
+        samplers_list_dict_adaptive = [hmcdict_ours_adaptive, hmcdict_ft_adaptive, rwdict, maladict]
         temperedist = sequence_distributions(parameters, priordistribution, targetdistribution)
         save_name=targetdistribution['target_name']
 

@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# A name for your job. This can be any string, and is used for convenience to identify individual jobs in the queue.
+#SBATCH -J smc_hmc 
+
+##SBATCH -p bsu-cpu # Partition normal
+
+##SBATCH -A mrc-bsu-s12-cpu # Partition normal
+
+# The number of cores to use
+#SBATCH -n 4
+
+
+#SBATCH --array=1-40%28 
+# The time limit for your job, format DD-hh:mm:ss
+# If your job is still running after this time it will be killed
+#SBATCH --time=12:0:0
+
+# Send an email if there is a problem. Other options include begin, end and all.
+#SBATCH --mail-type=fail
+
+
+python run_simulations_server_normal_compare.py $SLURM_ARRAY_TASK_ID 'full'

@@ -1,4 +1,4 @@
-# run the simulation for the student model
+# run the simulation for the normal model
 from __future__ import division, print_function
 
 import copy
@@ -14,23 +14,24 @@ from smc_sampler_functions.functions_smc_help import sequence_distributions
 
 
 from smc_sampler_functions.functions_smc_main import single_simulation_over_samplers_dims
-from smc_sampler_functions.target_distributions import priorlogdens_student, priorgradlogdens_student, priorsampler_student
-from smc_sampler_functions.target_distributions import targetlogdens_student, targetgradlogdens_student
-priordistribution = {'logdensity' : priorlogdens_student, 'gradlogdensity' : priorgradlogdens_student, 'priorsampler': priorsampler_student}
-targetdistribution = {'logdensity' : targetlogdens_student, 'gradlogdensity' : targetgradlogdens_student, 'target_name': 'student'}
+from smc_sampler_functions.target_distributions import priorlogdens, priorgradlogdens, priorsampler
+from smc_sampler_functions.target_distributions import targetlogdens_normal, targetgradlogdens_normal
+priordistribution = {'logdensity' : priorlogdens, 'gradlogdensity' : priorgradlogdens, 'priorsampler': priorsampler}
+targetdistribution = {'logdensity' : targetlogdens_normal, 'gradlogdensity' : targetgradlogdens_normal, 'target_name': 'normal'}
 
 if __name__ == '__main__':
 
     if sys.argv[2] == 'test':
         dim_list = [10]#, 295]
         M = 1
-        print('Run test loop student')
+        print('Run test loop normal')
     else: 
         #dim_list = [10, 20, 50, 100, 200, 300, 400, 500] #[500]#[300, 400]#
-        dim_list = [5, 10, 20, 30, 40, 50, 75, 100, 125, 150] #[10, 20, 30, 500]#[300, 400]#
-        dim_list = [100]
-        M = 100 
-        print('Run full loop student')
+        #dim_list = [5, 10, 20, 30, 40, 50, 75, 100, 125, 150] #[10, 20, 30, 500]#[300, 400]#
+        dim_list = [10, 20, 50, 100, 200, 300, 400, 500] #
+        #dim_list = [100]
+        M = 40
+        print('Run full loop normal')
 
     for dim in dim_list:
         parameters, maladict, rwdict, hmcdict_ft_adaptive, hmcdict_ours_adaptive_simple, __, __ = prepare_samplers(dim)
@@ -52,7 +53,7 @@ if __name__ == '__main__':
                 res_dict_hmc = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 res_dict_mala = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[1]['proposalname'], m_repetition, parameters['dim']), 'rb'))
                 # preapare simulation
-                import ipdb; ipdb.set_trace()
+                #import ipdb; ipdb.set_trace()
                 mala_mean_steps = int(np.ceil(len(res_dict_mala['temp_list'])/len(np.unique(res_dict_mala['temp_list']))))
                 maladict_non_adaptive['proposalname'] = 'MALA_non_adaptive'
                 maladict_non_adaptive['move_steps'] = mala_mean_steps
@@ -73,7 +74,7 @@ if __name__ == '__main__':
             res_dict_hmc = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[0]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             res_dict_mala = pickle.load(open('results_simulation_%s/'%(temperedist.target_name)+'%ssampler_%s_rep_%s_dim_%s.p'%(save_name, samplers_list_dict_adaptive[1]['proposalname'], m_repetition, parameters['dim']), 'rb'))
             # preapare simulation
-            import ipdb; ipdb.set_trace()
+            #import ipdb; ipdb.set_trace()
             mala_mean_steps = int(np.ceil(len(res_dict_mala['temp_list'])/len(np.unique(res_dict_mala['temp_list']))))
             maladict_non_adaptive['proposalname'] = 'MALA_non_adaptive'
             maladict_non_adaptive['move_steps'] = mala_mean_steps
